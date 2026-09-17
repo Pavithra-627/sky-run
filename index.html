@@ -2,43 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
   <title>Sky Run</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1 class="game-title">SKY RUN</h1>
+  <main id="game">
+    <header class="top-bar">
+      <div>
+        <small>SCORE</small>
+        <strong id="score">0</strong>
+      </div>
 
-  <div class="hud">
-    <div>SCORE: <span id="score">0</span></div>
-    <div>COINS: <span id="coins">0</span></div>
-    <div>DISTANCE: <span id="distance">0</span> m</div>
-  </div>
+      <div class="logo">SKY RUN</div>
 
-  <div id="game">
-    <div id="road">
-      <div class="lane-line line-1"></div>
-      <div class="lane-line line-2"></div>
+      <div>
+        <small>COINS</small>
+        <strong id="coins">0</strong>
+      </div>
+    </header>
 
-      <div id="player">🛹</div>
+    <section id="world">
+      <div class="skyline skyline-back"></div>
+      <div class="skyline skyline-front"></div>
+
+      <div id="road">
+        <div class="rail rail-left"></div>
+        <div class="rail rail-right"></div>
+        <div class="lane-mark lane-mark-1"></div>
+        <div class="lane-mark lane-mark-2"></div>
+
+        <div id="player">
+          <div class="player-head"></div>
+          <div class="player-body"></div>
+          <div class="board"></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="help-text">
+      Swipe left/right to move • Swipe up to jump
+    </p>
+
+    <div id="start-screen" class="overlay">
+      <h1>SKY RUN</h1>
+      <p>Run across the neon skyways.</p>
+      <p class="small-text">
+        Swipe left or right to change lanes.<br />
+        Swipe up to jump over barriers.
+      </p>
+      <button id="start-button">TAP TO PLAY</button>
     </div>
-  </div>
 
-  <div id="game-over" class="hidden">
-    <h2>GAME OVER</h2>
-    <p>Your score: <span id="final-score">0</span></p>
-    <button onclick="restartGame()">Play Again</button>
-  </div>
-
-  <div class="instructions">
-  Computer: ← → to move | Space to jump
-</div>
-
-<footer class="site-footer">
-  <a href="about.html">About</a>
-  <a href="contact.html">Contact</a>
-  <a href="privacy.html">Privacy Policy</a>
-</footer>
+    <div id="game-over-screen" class="overlay hidden">
+      <h1>GAME OVER</h1>
+      <p>Score: <span id="final-score">0</span></p>
+      <p>Coins: <span id="final-coins">0</span></p>
+      <button id="restart-button">PLAY AGAIN</button>
+    </div>
+  </main>
 
   <script src="game.js"></script>
 </body>
