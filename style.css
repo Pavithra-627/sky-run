@@ -82,7 +82,8 @@ body {
   height: 160px;
   opacity: 0.55;
   background-image:
-    linear-gradient(90deg,
+    linear-gradient(
+      90deg,
       transparent 0 4%,
       #1b2a6b 4% 10%,
       transparent 10% 13%,
@@ -97,14 +98,16 @@ body {
       #2d3f88 65% 75%,
       transparent 75% 80%,
       #1b2b6c 80% 91%,
-      transparent 91% 100%);
+      transparent 91% 100%
+    );
 }
 
 .skyline-front {
   height: 105px;
   opacity: 0.9;
   background-image:
-    linear-gradient(90deg,
+    linear-gradient(
+      90deg,
       #101a4e 0 7%,
       transparent 7% 10%,
       #16245f 10% 18%,
@@ -119,7 +122,8 @@ body {
       transparent 71% 75%,
       #112056 75% 88%,
       transparent 88% 92%,
-      #172666 92% 100%);
+      #172666 92% 100%
+    );
 }
 
 #road {
