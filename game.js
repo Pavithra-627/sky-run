@@ -18,6 +18,7 @@ let coins = 0;
 let speed = 4.5;
 let playing = false;
 let jumping = false;
+
 let touchStartX = 0;
 let touchStartY = 0;
 
@@ -193,9 +194,13 @@ function increaseScore() {
 }
 
 document.addEventListener("keydown", function (event) {
-  if (event.key === "ArrowLeft") moveLeft();
+  if (event.key === "ArrowLeft") {
+    moveLeft();
+  }
 
-  if (event.key === "ArrowRight") moveRight();
+  if (event.key === "ArrowRight") {
+    moveRight();
+  }
 
   if (event.code === "Space") {
     event.preventDefault();
@@ -203,39 +208,58 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
-game.addEventListener("touchstart", function (event) {
-  const touch = event.changedTouches[0];
+game.addEventListener(
+  "touchstart",
+  function (event) {
+    const touch = event.changedTouches[0];
 
-  touchStartX = touch.screenX;
-  touchStartY = touch.screenY;
-}, { passive: true });
+    touchStartX = touch.screenX;
+    touchStartY = touch.screenY;
+  },
+  { passive: true }
+);
 
-game.addEventListener("touchend", function (event) {
-  if (!playing) return;
+game.addEventListener(
+  "touchend",
+  function (event) {
+    if (!playing) return;
 
-  const touch = event.changedTouches[0];
-  const moveX = touch.screenX - touchStartX;
-  const moveY = touch.screenY - touchStartY;
+    const touch = event.changedTouches[0];
+    const moveX = touch.screenX - touchStartX;
+    const moveY = touch.screenY - touchStartY;
 
-  const minimumSwipe = 35;
+    const minimumSwipe = 35;
 
-  if (Math.abs(moveX) > Math.abs(moveY)) {
-    if (moveX > minimumSwipe) moveRight();
-    if (moveX < -minimumSwipe) moveLeft();
-  } else {
-    if (moveY < -minimumSwipe) jump();
-  }
-}, { passive: true });
+    if (Math.abs(moveX) > Math.abs(moveY)) {
+      if (moveX > minimumSwipe) {
+        moveRight();
+      }
+
+      if (moveX < -minimumSwipe) {
+        moveLeft();
+      }
+    } else {
+      if (moveY < -minimumSwipe) {
+        jump();
+      }
+    }
+  },
+  { passive: true }
+);
 
 startButton.addEventListener("click", startGame);
 restartButton.addEventListener("click", startGame);
 
 setInterval(function () {
-  if (playing) createObstacle();
+  if (playing) {
+    createObstacle();
+  }
 }, 1250);
 
 setInterval(function () {
-  if (playing) createCoin();
+  if (playing) {
+    createCoin();
+  }
 }, 850);
 
 setInterval(increaseScore, 500);
