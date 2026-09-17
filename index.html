@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sky Run</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1 class="game-title">SKY RUN</h1>
+
+  <div class="hud">
+    <div>SCORE: <span id="score">0</span></div>
+    <div>COINS: <span id="coins">0</span></div>
+    <div>DISTANCE: <span id="distance">0</span> m</div>
+  </div>
+
+  <div id="game">
+    <div id="road">
+      <div class="lane-line line-1"></div>
+      <div class="lane-line line-2"></div>
+
+      <div id="player">🛹</div>
+    </div>
+  </div>
+
+  <div id="game-over" class="hidden">
+    <h2>GAME OVER</h2>
+    <p>Your score: <span id="final-score">0</span></p>
+    <button onclick="restartGame()">Play Again</button>
+  </div>
+
+  <div class="instructions">
+    Computer: ← → to move | Space to jump
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
