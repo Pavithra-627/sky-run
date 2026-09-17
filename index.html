@@ -6,64 +6,45 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   />
-  <title>Sky Run</title>
+  <title>Sky Run - 3D Cyber Runner</title>
+
   <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
 </head>
 <body>
-  <main id="game">
-    <header class="top-bar">
-      <div>
-        <small>SCORE</small>
-        <strong id="score">0</strong>
-      </div>
+  <div id="hud">
+    <div class="stat">
+      <span>SCORE</span>
+      <strong id="score">0</strong>
+    </div>
 
-      <div class="logo">SKY RUN</div>
+    <h1>SKY RUN</h1>
 
-      <div>
-        <small>COINS</small>
-        <strong id="coins">0</strong>
-      </div>
-    </header>
+    <div class="stat">
+      <span>DISTANCE</span>
+      <strong id="distance">0m</strong>
+    </div>
+  </div>
 
-    <section id="world">
-      <div class="skyline skyline-back"></div>
-      <div class="skyline skyline-front"></div>
+  <canvas id="gameCanvas"></canvas>
 
-      <div id="road">
-        <div class="rail rail-left"></div>
-        <div class="rail rail-right"></div>
-        <div class="lane-mark lane-mark-1"></div>
-        <div class="lane-mark lane-mark-2"></div>
-
-        <div id="player">
-          <div class="player-head"></div>
-          <div class="player-body"></div>
-          <div class="board"></div>
-        </div>
-      </div>
-    </section>
-
-    <p class="help-text">
-      Swipe left/right to move • Swipe up to jump
+  <div id="start-screen" class="screen">
+    <h2>SKY RUN</h2>
+    <p>Run through the neon skies.</p>
+    <p class="instructions">
+      Swipe left/right to change lanes.<br />
+      Swipe up to jump.
     </p>
+    <button id="start-button">TAP TO PLAY</button>
+  </div>
 
-    <div id="start-screen" class="overlay">
-      <h1>SKY RUN</h1>
-      <p>Run across the neon skyways.</p>
-      <p class="small-text">
-        Swipe left or right to change lanes.<br />
-        Swipe up to jump over barriers.
-      </p>
-      <button id="start-button">TAP TO PLAY</button>
-    </div>
-
-    <div id="game-over-screen" class="overlay hidden">
-      <h1>GAME OVER</h1>
-      <p>Score: <span id="final-score">0</span></p>
-      <p>Coins: <span id="final-coins">0</span></p>
-      <button id="restart-button">PLAY AGAIN</button>
-    </div>
-  </main>
+  <div id="game-over-screen" class="screen hidden">
+    <h2>GAME OVER</h2>
+    <p>Final score: <span id="final-score">0</span></p>
+    <button id="restart-button">PLAY AGAIN</button>
+  </div>
 
   <script src="game.js"></script>
 </body>
