@@ -1,97 +1,137 @@
+const game = document.getElementById("game");
 const road = document.getElementById("road");
 const player = document.getElementById("player");
+
 const scoreText = document.getElementById("score");
 const coinsText = document.getElementById("coins");
-const distanceText = document.getElementById("distance");
-const gameOverBox = document.getElementById("game-over");
 const finalScoreText = document.getElementById("final-score");
+const finalCoinsText = document.getElementById("final-coins");
+
+const startScreen = document.getElementById("start-screen");
+const gameOverScreen = document.getElementById("game-over-screen");
+const startButton = document.getElementById("start-button");
+const restartButton = document.getElementById("restart-button");
 
 let lane = 1;
 let score = 0;
 let coins = 0;
-let distance = 0;
-let speed = 5;
-let playing = true;
+let speed = 4.5;
+let playing = false;
 let jumping = false;
+let touchStartX = 0;
+let touchStartY = 0;
 
-const lanePositions = ["16.5%", "50%", "83.5%"];
+const lanes = ["30%", "50%", "70%"];
 
-function movePlayer() {
-  player.style.left = lanePositions[lane];
+function updatePlayerPosition() {
+  player.style.left = lanes[lane];
 }
 
-document.addEventListener("keydown", function (event) {
-  if (!playing) return;
+function updateScore() {
+  scoreText.textContent = score;
+  coinsText.textContent = coins;
+}
 
-  if (event.key === "ArrowLeft" && lane > 0) {
-    lane--;
-    movePlayer();
-  }
+function startGame() {
+  document.querySelectorAll(".obstacle, .coin").forEach(function (item) {
+    item.remove();
+  });
 
-  if (event.key === "ArrowRight" && lane < 2) {
-    lane++;
-    movePlayer();
-  }
+  lane = 1;
+  score = 0;
+  coins = 0;
+  speed = 4.5;
+  playing = true;
+  jumping = false;
 
-  if (event.code === "Space") {
-    event.preventDefault();
-    jump();
-  }
-});
+  updatePlayerPosition();
+  updateScore();
+
+  player.style.bottom = "13%";
+  startScreen.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
+}
+
+function moveLeft() {
+  if (!playing || lane === 0) return;
+
+  lane--;
+  updatePlayerPosition();
+}
+
+function moveRight() {
+  if (!playing || lane === 2) return;
+
+  lane++;
+  updatePlayerPosition();
+}
 
 function jump() {
-  if (jumping || !playing) return;
+  if (!playing || jumping) return;
 
   jumping = true;
-  player.style.bottom = "180px";
+  player.style.bottom = "31%";
 
   setTimeout(function () {
-    player.style.bottom = "70px";
+    player.style.bottom = "13%";
     jumping = false;
-  }, 500);
+  }, 430);
+}
+
+function gameOver() {
+  if (!playing) return;
+
+  playing = false;
+  finalScoreText.textContent = score;
+  finalCoinsText.textContent = coins;
+  gameOverScreen.classList.remove("hidden");
 }
 
 function createObstacle() {
   if (!playing) return;
 
   const obstacle = document.createElement("div");
-  obstacle.className = "obstacle";
-  obstacle.textContent = "DANGER";
-
   const obstacleLane = Math.floor(Math.random() * 3);
 
-  obstacle.style.left = `calc(${lanePositions[obstacleLane]} - 47px)`;
-  obstacle.style.top = "-70px";
+  obstacle.className = "obstacle";
+  obstacle.textContent = "DANGER";
+  obstacle.style.left = `calc(${lanes[obstacleLane]} - 29px)`;
+  obstacle.style.top = "-55px";
 
   road.appendChild(obstacle);
 
-  let top = -70;
+  let position = -55;
 
-  const movement = setInterval(function () {
+  const moveObstacle = setInterval(function () {
     if (!playing) {
-      clearInterval(movement);
+      clearInterval(moveObstacle);
       obstacle.remove();
       return;
     }
 
-    top += speed;
-    obstacle.style.top = top + "px";
+    position += speed;
+    obstacle.style.top = position + "px";
 
-    const nearPlayer =
-      top > window.innerHeight - 170 &&
-      top < window.innerHeight - 50;
+    const playerZoneStart = road.clientHeight * 0.70;
+    const playerZoneEnd = road.clientHeight * 0.88;
 
-    if (nearPlayer && obstacleLane === lane && !jumping) {
-      clearInterval(movement);
-      endGame();
+    if (
+      position > playerZoneStart &&
+      position < playerZoneEnd &&
+      obstacleLane === lane &&
+      !jumping
+    ) {
+      clearInterval(moveObstacle);
+      obstacle.remove();
+      gameOver();
       return;
     }
 
-    if (top > window.innerHeight) {
-      clearInterval(movement);
+    if (position > road.clientHeight) {
+      clearInterval(moveObstacle);
       obstacle.remove();
       score += 10;
-      updateHud();
+      updateScore();
     }
   }, 20);
 }
@@ -100,75 +140,104 @@ function createCoin() {
   if (!playing) return;
 
   const coin = document.createElement("div");
-  coin.className = "coin";
-
   const coinLane = Math.floor(Math.random() * 3);
 
-  coin.style.left = `calc(${lanePositions[coinLane]} - 17px)`;
-  coin.style.top = "-40px";
+  coin.className = "coin";
+  coin.style.left = `calc(${lanes[coinLane]} - 13px)`;
+  coin.style.top = "-30px";
 
   road.appendChild(coin);
 
-  let top = -40;
+  let position = -30;
 
-  const movement = setInterval(function () {
+  const moveCoin = setInterval(function () {
     if (!playing) {
-      clearInterval(movement);
+      clearInterval(moveCoin);
       coin.remove();
       return;
     }
 
-    top += speed;
-    coin.style.top = top + "px";
+    position += speed;
+    coin.style.top = position + "px";
 
-    const nearPlayer =
-      top > window.innerHeight - 170 &&
-      top < window.innerHeight - 50;
+    const playerZoneStart = road.clientHeight * 0.70;
+    const playerZoneEnd = road.clientHeight * 0.88;
 
-    if (nearPlayer && coinLane === lane) {
+    if (
+      position > playerZoneStart &&
+      position < playerZoneEnd &&
+      coinLane === lane
+    ) {
+      clearInterval(moveCoin);
+      coin.remove();
+
       coins++;
       score += 25;
-      updateHud();
-      clearInterval(movement);
-      coin.remove();
+      updateScore();
       return;
     }
 
-    if (top > window.innerHeight) {
-      clearInterval(movement);
+    if (position > road.clientHeight) {
+      clearInterval(moveCoin);
       coin.remove();
     }
   }, 20);
 }
 
-function updateHud() {
-  scoreText.textContent = score;
-  coinsText.textContent = coins;
-  distanceText.textContent = distance;
-}
-
-function updateGame() {
+function increaseScore() {
   if (!playing) return;
 
-  distance++;
   score++;
-  speed += 0.01;
-
-  updateHud();
+  speed += 0.012;
+  updateScore();
 }
 
-function endGame() {
-  playing = false;
-  finalScoreText.textContent = score;
-  gameOverBox.classList.remove("hidden");
-}
+document.addEventListener("keydown", function (event) {
+  if (event.key === "ArrowLeft") moveLeft();
 
-function restartGame() {
-  window.location.reload();
-}
+  if (event.key === "ArrowRight") moveRight();
 
-setInterval(createObstacle, 1300);
-setInterval(createCoin, 900);
-setInterval(updateGame, 500);
+  if (event.code === "Space") {
+    event.preventDefault();
+    jump();
+  }
+});
 
-movePlayer();
+game.addEventListener("touchstart", function (event) {
+  const touch = event.changedTouches[0];
+
+  touchStartX = touch.screenX;
+  touchStartY = touch.screenY;
+}, { passive: true });
+
+game.addEventListener("touchend", function (event) {
+  if (!playing) return;
+
+  const touch = event.changedTouches[0];
+  const moveX = touch.screenX - touchStartX;
+  const moveY = touch.screenY - touchStartY;
+
+  const minimumSwipe = 35;
+
+  if (Math.abs(moveX) > Math.abs(moveY)) {
+    if (moveX > minimumSwipe) moveRight();
+    if (moveX < -minimumSwipe) moveLeft();
+  } else {
+    if (moveY < -minimumSwipe) jump();
+  }
+}, { passive: true });
+
+startButton.addEventListener("click", startGame);
+restartButton.addEventListener("click", startGame);
+
+setInterval(function () {
+  if (playing) createObstacle();
+}, 1250);
+
+setInterval(function () {
+  if (playing) createCoin();
+}, 850);
+
+setInterval(increaseScore, 500);
+
+updatePlayerPosition();
