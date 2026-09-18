@@ -20,8 +20,9 @@ const resumeButton = document.getElementById("resume-button");
 const engine = new BABYLON.Engine(canvas, true);
 
 let scene;
-let player;
-let playerMaterial;
+let playerRoot;
+let playerPicture;
+let playerShadow;
 
 let playing = false;
 let paused = false;
@@ -51,6 +52,7 @@ let bestScore =
   Number(localStorage.getItem("runRideBestScore")) || 0;
 
 const lanePositions = [-3, 0, 3];
+const runnerImage = "image.jpg (2).png";
 
 bestScoreText.textContent = bestScore;
 
@@ -94,10 +96,20 @@ function createScene() {
 
   light.intensity = 1;
 
+  const pinkLight = new BABYLON.PointLight(
+    "pinkLight",
+    new BABYLON.Vector3(0, 7, 15),
+    scene
+  );
+
+  pinkLight.diffuse = new BABYLON.Color3(1, 0.05, 0.65);
+  pinkLight.intensity = 1.3;
+  pinkLight.range = 32;
+
   createRoad();
   createPlayer();
 
-  camera.lockedTarget = player;
+  camera.lockedTarget = playerRoot;
 
   return scene;
 }
@@ -157,29 +169,104 @@ function createRoad() {
   }
 }
 
-function createPlayer() {
-  if (player) {
-    player.dispose();
+function disposePlayer() {
+  if (playerPicture) {
+    playerPicture.dispose();
   }
 
-  const color =
-    selectedRunner === "female"
-      ? new BABYLON.Color3(1, 0.05, 0.65)
-      : new BABYLON.Color3(0, 0.80, 1);
+  if (playerShadow) {
+    playerShadow.dispose();
+  }
 
-  playerMaterial = createMaterial(
-    "playerMaterial_" + selectedRunner,
-    color
-  );
+  if (playerRoot) {
+    playerRoot.dispose();
+  }
 
-  player = BABYLON.MeshBuilder.CreateCapsule(
-    "runner",
-    { height: 2.2, radius: 0.38 },
+  playerPicture = null;
+  playerShadow = null;
+  playerRoot = null;
+}
+
+function createPlayer() {
+  disposePlayer();
+
+  playerRoot = new BABYLON.TransformNode("playerRoot", scene);
+  playerRoot.position = new BABYLON.Vector3(0, 1.65, 0);
+
+  playerPicture = BABYLON.MeshBuilder.CreatePlane(
+    "runnerPicture",
+    {
+      width: 2.6,
+      height: 3.6,
+      sideOrientation: BABYLON.Mesh.DOUBLESIDE
+    },
     scene
   );
 
-  player.position = new BABYLON.Vector3(0, 1.1, 0);
-  player.material = playerMaterial;
+  playerPicture.parent = playerRoot;
+  playerPicture.position.y = 0;
+  playerPicture.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;
+
+  const pictureMaterial = new BABYLON.StandardMaterial(
+    "runnerPictureMaterial_" + selectedRunner,
+    scene
+  );
+
+  const pictureTexture = new BABYLON.Texture(
+    runnerImage,
+    scene,
+    true,
+    false
+  );
+
+  pictureTexture.hasAlpha = true;
+
+  /*
+    The uploaded picture has the male runner on the left,
+    and the female runner on the right.
+  */
+  if (selectedRunner === "male") {
+    pictureTexture.uOffset = 0;
+    pictureTexture.uScale = 0.5;
+  } else {
+    pictureTexture.uOffset = 0.5;
+    pictureTexture.uScale = 0.5;
+  }
+
+  pictureMaterial.diffuseTexture = pictureTexture;
+  pictureMaterial.opacityTexture = pictureTexture;
+  pictureMaterial.useAlphaFromDiffuseTexture = true;
+  pictureMaterial.emissiveColor =
+    selectedRunner === "male"
+      ? new BABYLON.Color3(0, 0.35, 0.55)
+      : new BABYLON.Color3(0.45, 0.02, 0.28);
+
+  pictureMaterial.backFaceCulling = false;
+  playerPicture.material = pictureMaterial;
+
+  playerShadow = BABYLON.MeshBuilder.CreateDisc(
+    "runnerShadow",
+    { radius: 0.85, tessellation: 24 },
+    scene
+  );
+
+  playerShadow.parent = playerRoot;
+  playerShadow.position.y = -1.58;
+  playerShadow.rotation.x = Math.PI / 2;
+
+  const shadowMaterial = new BABYLON.StandardMaterial(
+    "shadowMaterial_" + selectedRunner,
+    scene
+  );
+
+  shadowMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+  shadowMaterial.emissiveColor =
+    selectedRunner === "male"
+      ? new BABYLON.Color3(0, 0.45, 0.75)
+      : new BABYLON.Color3(0.55, 0.02, 0.40);
+
+  shadowMaterial.alpha = 0.55;
+  playerShadow.material = shadowMaterial;
 }
 
 function createCoinLine() {
@@ -247,7 +334,6 @@ function chooseMale() {
   selectedRunner = "male";
   maleButton.classList.add("selected");
   femaleButton.classList.remove("selected");
-
   createPlayer();
 }
 
@@ -257,7 +343,6 @@ function chooseFemale() {
   selectedRunner = "female";
   femaleButton.classList.add("selected");
   maleButton.classList.remove("selected");
-
   createPlayer();
 }
 
@@ -282,24 +367,24 @@ function jump() {
 
   BABYLON.Animation.CreateAndStartAnimation(
     "jumpUp",
-    player,
+    playerRoot,
     "position.y",
     60,
     14,
-    1.1,
-    2.8,
+    1.65,
+    3.15,
     BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
   );
 
   setTimeout(function () {
     BABYLON.Animation.CreateAndStartAnimation(
       "jumpDown",
-      player,
+      playerRoot,
       "position.y",
       60,
       14,
-      2.8,
-      1.1,
+      3.15,
+      1.65,
       BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     );
 
@@ -331,8 +416,9 @@ function startGame() {
 
   lane = 1;
   targetX = 0;
-  player.position.x = 0;
-  player.position.y = 1.1;
+
+  playerRoot.position.x = 0;
+  playerRoot.position.y = 1.65;
 
   score = 0;
   coinCount = 0;
@@ -382,16 +468,31 @@ function resumeGame() {
   pauseScreen.classList.add("hidden");
 }
 
+function updateRunnerAnimation() {
+  if (jumping) return;
+
+  playerRoot.position.y =
+    1.65 + Math.abs(Math.sin(frames * 0.55)) * 0.08;
+
+  playerPicture.rotation.z =
+    Math.sin(frames * 0.28) * 0.035;
+
+  playerPicture.position.y =
+    Math.sin(frames * 0.55) * 0.04;
+}
+
 function updateGame() {
   if (!playing || paused) return;
 
   frames++;
 
-  player.position.x +=
-    (targetX - player.position.x) * 0.15;
+  playerRoot.position.x +=
+    (targetX - playerRoot.position.x) * 0.15;
 
-  player.rotation.z =
-    (targetX - player.position.x) * -0.12;
+  playerRoot.rotation.z =
+    (targetX - playerRoot.position.x) * -0.10;
+
+  updateRunnerAnimation();
 
   score++;
   distance += 0.1;
