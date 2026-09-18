@@ -10,6 +10,9 @@ const gameOverScreen = document.getElementById("game-over-screen");
 const startButton = document.getElementById("start-button");
 const restartButton = document.getElementById("restart-button");
 
+const maleButton = document.getElementById("male-button");
+const femaleButton = document.getElementById("female-button");
+
 const engine = new BABYLON.Engine(canvas, true, {
   preserveDrawingBuffer: true,
   stencil: true
@@ -21,7 +24,9 @@ let leftArm;
 let rightArm;
 let leftLeg;
 let rightLeg;
+let runnerParts = [];
 
+let selectedRunner = "male";
 let playing = false;
 let jumping = false;
 let lane = 1;
@@ -35,7 +40,6 @@ let frames = 0;
 
 let obstacles = [];
 let coins = [];
-let roadPieces = [];
 let movingRoadObjects = [];
 
 let obstacleTimer = 0;
@@ -166,8 +170,6 @@ function createRoad() {
 
     road.position = new BABYLON.Vector3(0, 0, z);
     road.material = roadMaterial;
-
-    roadPieces.push(road);
     movingRoadObjects.push(road);
 
     const leftRail = BABYLON.MeshBuilder.CreateBox(
@@ -227,12 +229,6 @@ function createCity() {
     )
   ];
 
-  const signMaterial = createMaterial(
-    "signMaterial",
-    new BABYLON.Color3(0, 0.75, 1),
-    new BABYLON.Color3(0, 1, 1)
-  );
-
   for (let i = 0; i < 50; i++) {
     const side = i % 2 === 0 ? -1 : 1;
     const z = 8 + Math.floor(i / 2) * 6;
@@ -257,125 +253,183 @@ function createCity() {
 
     building.material =
       buildingMaterials[i % buildingMaterials.length];
-
-    if (i % 3 === 0) {
-      const sign = BABYLON.MeshBuilder.CreateBox(
-        "sign_" + i,
-        {
-          width: width * 0.65,
-          height: 0.5,
-          depth: 0.08
-        },
-        scene
-      );
-
-      sign.position = new BABYLON.Vector3(
-        building.position.x - side * (width / 2 + 0.06),
-        building.position.y + height * 0.1,
-        building.position.z
-      );
-
-      sign.material = signMaterial;
-    }
   }
 }
 
+function clearPlayer() {
+  runnerParts.forEach(function (part) {
+    part.dispose();
+  });
+
+  runnerParts = [];
+
+  if (playerRoot) {
+    playerRoot.dispose();
+  }
+}
+
+function addRunnerPart(mesh) {
+  mesh.parent = playerRoot;
+  runnerParts.push(mesh);
+  return mesh;
+}
+
 function createPlayer() {
+  clearPlayer();
+
   playerRoot = new BABYLON.TransformNode("playerRoot", scene);
   playerRoot.position = new BABYLON.Vector3(0, 0.78, 0);
 
+  const isFemale = selectedRunner === "female";
+
   const suitMaterial = createMaterial(
-    "runnerSuit",
-    new BABYLON.Color3(0.12, 0.02, 0.30),
-    new BABYLON.Color3(0.32, 0.01, 0.55)
+    "runnerSuit_" + selectedRunner,
+    isFemale
+      ? new BABYLON.Color3(0.32, 0.02, 0.25)
+      : new BABYLON.Color3(0.02, 0.16, 0.34),
+    isFemale
+      ? new BABYLON.Color3(0.95, 0.02, 0.52)
+      : new BABYLON.Color3(0.0, 0.65, 1.0)
   );
 
   const helmetMaterial = createMaterial(
-    "runnerHelmet",
-    new BABYLON.Color3(0.02, 0.30, 0.48),
-    new BABYLON.Color3(0, 0.78, 1)
+    "runnerHelmet_" + selectedRunner,
+    isFemale
+      ? new BABYLON.Color3(0.34, 0.03, 0.38)
+      : new BABYLON.Color3(0.02, 0.30, 0.48),
+    isFemale
+      ? new BABYLON.Color3(1.0, 0.04, 0.68)
+      : new BABYLON.Color3(0, 0.78, 1)
   );
 
   const shoeMaterial = createMaterial(
-    "runnerShoe",
-    new BABYLON.Color3(0.04, 0.10, 0.20),
-    new BABYLON.Color3(0, 0.42, 0.90)
+    "runnerShoe_" + selectedRunner,
+    new BABYLON.Color3(0.04, 0.08, 0.20),
+    isFemale
+      ? new BABYLON.Color3(1.0, 0.04, 0.68)
+      : new BABYLON.Color3(0, 0.42, 0.90)
   );
 
-  const body = BABYLON.MeshBuilder.CreateCapsule(
-    "runnerBody",
-    { height: 1.35, radius: 0.27 },
-    scene
+  const hairMaterial = createMaterial(
+    "hairMaterial",
+    new BABYLON.Color3(0.10, 0.01, 0.12),
+    new BABYLON.Color3(0.45, 0.01, 0.38)
   );
 
-  body.parent = playerRoot;
+  const bodyWidth = isFemale ? 0.24 : 0.31;
+  const armOffset = isFemale ? 0.37 : 0.46;
+  const legOffset = isFemale ? 0.16 : 0.21;
+
+  const body = addRunnerPart(
+    BABYLON.MeshBuilder.CreateCapsule(
+      "runnerBody",
+      { height: 1.35, radius: bodyWidth },
+      scene
+    )
+  );
+
   body.position.y = 1.15;
   body.material = suitMaterial;
 
-  const head = BABYLON.MeshBuilder.CreateSphere(
-    "runnerHead",
-    { diameter: 0.52 },
-    scene
+  const head = addRunnerPart(
+    BABYLON.MeshBuilder.CreateSphere(
+      "runnerHead",
+      { diameter: isFemale ? 0.50 : 0.55 },
+      scene
+    )
   );
 
-  head.parent = playerRoot;
-  head.position.y = 2.05;
+  head.position.y = 2.06;
   head.material = helmetMaterial;
 
-  leftArm = BABYLON.MeshBuilder.CreateCapsule(
-    "leftArm",
-    { height: 0.92, radius: 0.11 },
-    scene
+  leftArm = addRunnerPart(
+    BABYLON.MeshBuilder.CreateCapsule(
+      "leftArm",
+      { height: 0.92, radius: 0.11 },
+      scene
+    )
   );
 
-  leftArm.parent = playerRoot;
-  leftArm.position = new BABYLON.Vector3(-0.42, 1.40, 0);
+  leftArm.position = new BABYLON.Vector3(-armOffset, 1.40, 0);
   leftArm.material = suitMaterial;
 
-  rightArm = BABYLON.MeshBuilder.CreateCapsule(
-    "rightArm",
-    { height: 0.92, radius: 0.11 },
-    scene
+  rightArm = addRunnerPart(
+    BABYLON.MeshBuilder.CreateCapsule(
+      "rightArm",
+      { height: 0.92, radius: 0.11 },
+      scene
+    )
   );
 
-  rightArm.parent = playerRoot;
-  rightArm.position = new BABYLON.Vector3(0.42, 1.40, 0);
+  rightArm.position = new BABYLON.Vector3(armOffset, 1.40, 0);
   rightArm.material = suitMaterial;
 
-  leftLeg = BABYLON.MeshBuilder.CreateCapsule(
-    "leftLeg",
-    { height: 1.05, radius: 0.14 },
-    scene
+  leftLeg = addRunnerPart(
+    BABYLON.MeshBuilder.CreateCapsule(
+      "leftLeg",
+      { height: 1.05, radius: 0.14 },
+      scene
+    )
   );
 
-  leftLeg.parent = playerRoot;
-  leftLeg.position = new BABYLON.Vector3(-0.19, 0.32, 0);
+  leftLeg.position = new BABYLON.Vector3(-legOffset, 0.32, 0);
   leftLeg.material = shoeMaterial;
 
-  rightLeg = BABYLON.MeshBuilder.CreateCapsule(
-    "rightLeg",
-    { height: 1.05, radius: 0.14 },
-    scene
+  rightLeg = addRunnerPart(
+    BABYLON.MeshBuilder.CreateCapsule(
+      "rightLeg",
+      { height: 1.05, radius: 0.14 },
+      scene
+    )
   );
 
-  rightLeg.parent = playerRoot;
-  rightLeg.position = new BABYLON.Vector3(0.19, 0.32, 0);
+  rightLeg.position = new BABYLON.Vector3(legOffset, 0.32, 0);
   rightLeg.material = shoeMaterial;
 
-  const glow = BABYLON.MeshBuilder.CreateDisc(
-    "runnerGlow",
-    { radius: 0.75, tessellation: 32 },
-    scene
+  if (isFemale) {
+    const ponytail = addRunnerPart(
+      BABYLON.MeshBuilder.CreateSphere(
+        "ponytail",
+        { diameter: 0.30 },
+        scene
+      )
+    );
+
+    ponytail.position = new BABYLON.Vector3(0, 2.10, -0.32);
+    ponytail.material = hairMaterial;
+
+    const ponytailEnd = addRunnerPart(
+      BABYLON.MeshBuilder.CreateCapsule(
+        "ponytailEnd",
+        { height: 0.45, radius: 0.09 },
+        scene
+      )
+    );
+
+    ponytailEnd.position = new BABYLON.Vector3(0, 1.88, -0.40);
+    ponytailEnd.rotation.x = 0.60;
+    ponytailEnd.material = hairMaterial;
+  }
+
+  const glow = addRunnerPart(
+    BABYLON.MeshBuilder.CreateDisc(
+      "runnerGlow",
+      { radius: 0.78, tessellation: 32 },
+      scene
+    )
   );
 
-  glow.parent = playerRoot;
   glow.position.y = -0.73;
   glow.rotation.x = Math.PI / 2;
 
   const glowMaterial = createMaterial(
-    "runnerGlowMaterial",
-    new BABYLON.Color3(0, 0.65, 1),
-    new BABYLON.Color3(0, 0.95, 1)
+    "runnerGlowMaterial_" + selectedRunner,
+    isFemale
+      ? new BABYLON.Color3(1.0, 0.04, 0.60)
+      : new BABYLON.Color3(0, 0.65, 1),
+    isFemale
+      ? new BABYLON.Color3(1.0, 0.03, 0.75)
+      : new BABYLON.Color3(0, 0.95, 1)
   );
 
   glow.material = glowMaterial;
@@ -446,9 +500,7 @@ function createCoinLine() {
 function createZigZagCoins() {
   for (let i = 0; i < 12; i++) {
     const laneNumber = i % 3;
-    const x = lanePositions[laneNumber];
-
-    createCoin(x, 34 + i * 2.2, 1.1);
+    createCoin(lanePositions[laneNumber], 34 + i * 2.2, 1.1);
   }
 }
 
@@ -553,7 +605,10 @@ function updateRunAnimation() {
   leftLeg.rotation.x = -runAmount;
   rightLeg.rotation.x = runAmount;
 
-  playerRoot.position.y += Math.sin(frames * 0.56) * 0.004;
+  if (!jumping) {
+    playerRoot.position.y =
+      0.78 + Math.abs(Math.sin(frames * 0.56)) * 0.035;
+  }
 }
 
 function updateGame() {
@@ -580,13 +635,11 @@ function updateGame() {
   obstacleTimer++;
   coinTimer++;
 
-  /* First 4 seconds: no barriers, so users learn controls. */
   if (frames > 240 && obstacleTimer > 190) {
     createObstacle();
     obstacleTimer = 0;
   }
 
-  /* Coin patterns appear much more often than obstacles. */
   if (coinTimer > 82) {
     if (Math.random() > 0.45) {
       createCoinLine();
@@ -653,6 +706,24 @@ function updateGame() {
     }
   });
 }
+
+maleButton.addEventListener("click", function () {
+  if (playing) return;
+
+  selectedRunner = "male";
+  maleButton.classList.add("selected");
+  femaleButton.classList.remove("selected");
+  createPlayer();
+});
+
+femaleButton.addEventListener("click", function () {
+  if (playing) return;
+
+  selectedRunner = "female";
+  femaleButton.classList.add("selected");
+  maleButton.classList.remove("selected");
+  createPlayer();
+});
 
 document.addEventListener("keydown", function (event) {
   if (event.key === "ArrowLeft") moveLeft();
