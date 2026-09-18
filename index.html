@@ -1,334 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hyper Run</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+  <meta charset="UTF-8" />
 
-        body {
-            background: #050510;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
-        }
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
 
-        #gameContainer {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            height: 100%;
-            max-height: 500px;
-            background: #03030a;
-            border: 3px solid #00f0ff;
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
-            overflow: hidden;
-        }
+  <title>Run-Ride</title>
 
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+  <link rel="stylesheet" href="style.css" />
 
-        #ui {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .hud {
-            background: rgba(5, 5, 15, 0.75);
-            padding: 8px 16px;
-            border-radius: 4px;
-            border: 1px solid #ff007f;
-            font-size: 20px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: #fff;
-            text-shadow: 0 0 8px #ff007f;
-        }
-
-        #title {
-            color: #00f0ff;
-            text-shadow: 0 0 8px #00f0ff;
-            border-color: #00f0ff;
-        }
-
-        #overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(4, 4, 12, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 52px;
-            color: #00f0ff;
-            text-shadow: 0 0 20px #00f0ff;
-            margin-bottom: 10px;
-            letter-spacing: 6px;
-            font-weight: 900;
-        }
-
-        p {
-            font-size: 16px;
-            color: #8a8ab0;
-            margin-bottom: 30px;
-            max-width: 400px;
-            line-height: 1.5;
-        }
-
-        button {
-            background: #ff007f;
-            color: #fff;
-            border: none;
-            padding: 14px 45px;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
-            letter-spacing: 1px;
-            transition: transform 0.1s ease, background 0.2s;
-        }
-
-        button:hover {
-            background: #ff3399;
-            transform: scale(1.05);
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        @media (max-width: 800px) , (max-height: 500px) {
-            #gameContainer {
-                border: none;
-                box-shadow: none;
-                max-width: 100%;
-                max-height: 100%;
-                height: 100vh;
-                width: 100vw;
-            }
-        }
-    </style>
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
 </head>
+
 <body>
-
-<div id="gameContainer">
-    <div id="ui">
-        <div id="title" class="hud">HYPER RUN</div>
-        <div id="scoreDisplay" class="hud">SCORE: 0</div>
+  <div id="hud">
+    <div class="stat">
+      <span>SCORE</span>
+      <strong id="score">0</strong>
     </div>
 
-    <div id="overlay">
-        <h1 id="screenTitle">HYPER RUN</h1>
-        <p id="screenSub">Dodge the neon laser grids. Swipe or use A/D keys.</p>
-        <button id="actionBtn" onclick="startGame()">START RUN</button>
+    <h1>RUN-RIDE</h1>
+
+    <div class="stat">
+      <span>COINS</span>
+      <strong id="coins">0</strong>
     </div>
 
-    <canvas id="gameCanvas"></canvas>
-</div>
+    <div class="stat distance-stat">
+      <span>DISTANCE</span>
+      <strong id="distance">0m</strong>
+    </div>
 
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    <div class="stat best-stat">
+      <span>BEST</span>
+      <strong id="best-score">0</strong>
+    </div>
+  </div>
 
-    canvas.width = 800;
-    canvas.height = 500;
+  <button
+    id="pause-button"
+    class="pause-button"
+    type="button"
+    aria-label="Pause game"
+  >
+    Ⅱ
+  </button>
 
-    let gameActive = false;
-    let score = 0;
-    let baseSpeed = 6;
-    let currentSpeed = 6;
-    let playerLane = 1; 
-    let playerX = 400;
-    let targetX = 400;
-    let obstacles = [];
-    let gameTime = 0;
+  <canvas id="gameCanvas"></canvas>
 
-    // Hard-coded lane position anchors
-    const lanePositions = [160, 400, 640];
+  <div id="start-screen" class="screen">
+    <h2>RUN-RIDE</h2>
 
-    window.addEventListener('keydown', function(e) {
-        if (!gameActive) return;
-        if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
-            if (playerLane > 0) playerLane--;
-        }
-        if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
-            if (playerLane < 2) playerLane++;
-        }
-    });
+    <img
+      src="image.jpg (2).png"
+      alt="Run-Ride male and female runners"
+      class="runner-picture"
+    />
 
-    let touchStartX = 0;
-    window.addEventListener('touchstart', function(e) {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
+    <p>Choose your runner</p>
 
-    window.addEventListener('touchend', function(e) {
-        if (!gameActive) return;
-        let touchEndX = e.changedTouches[0].screenX;
-        let diffX = touchEndX - touchStartX;
+    <div class="character-buttons">
+      <button
+        id="male-button"
+        class="character-button selected"
+        type="button"
+      >
+        MALE RUNNER
+      </button>
 
-        if (diffX > 40) { 
-            if (playerLane < 2) playerLane++;
-        } else if (diffX < -40) { 
-            if (playerLane > 0) playerLane--;
-        }
-    }, { passive: true });
+      <button
+        id="female-button"
+        class="character-button"
+        type="button"
+      >
+        FEMALE RUNNER
+      </button>
+    </div>
 
-    function startGame() {
-        document.getElementById('overlay').style.display = 'none';
-        score = 0;
-        currentSpeed = baseSpeed;
-        playerLane = 1;
-        playerX = 400;
-        obstacles = [];
-        gameTime = 0;
-        gameActive = true;
-        animate();
-    }
+    <p class="instructions">
+      Swipe left or right to change lanes.<br />
+      Swipe up to jump over barriers.
+    </p>
 
-    function gameOver() {
-        gameActive = false;
-        document.getElementById('screenTitle').innerText = "CRASH DETECTED";
-        document.getElementById('screenSub').innerText = "System compromised. Final Score: " + Math.floor(score);
-        document.getElementById('actionBtn').innerText = "REBOOT RUN";
-        document.getElementById('overlay').style.display = 'flex';
-    }
+    <button id="start-button" type="button">
+      TAP TO PLAY
+    </button>
+  </div>
 
-    function spawnObstacle() {
-        if (Math.random() < 0.02 + (gameTime * 0.000005)) {
-            let lane = Math.floor(Math.random() * 3);
-            if (obstacles.length > 0 && obstacles[obstacles.length - 1].z > 440 && obstacles[obstacles.length - 1].lane === lane) return;
-            
-            obstacles.push({
-                lane: lane,
-                z: 500, 
-                width: 140,
-                height: 50
-            });
-        }
-    }
+  <div id="game-over-screen" class="screen hidden">
+    <h2>GAME OVER</h2>
 
-    function animate() {
-        if (!gameActive) return;
-        
-        gameTime++;
-        score += 0.1;
-        currentSpeed = baseSpeed + (gameTime * 0.001); 
-        document.getElementById('scoreDisplay').innerText = "SCORE: " + Math.floor(score);
+    <p>
+      Final score:
+      <span id="final-score">0</span>
+    </p>
 
-        ctx.fillStyle = '#050512';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    <button id="restart-button" type="button">
+      PLAY AGAIN
+    </button>
+  </div>
 
-        let horizonX = 400, horizonY = 180;
-        let groundY = 500;
+  <div id="pause-screen" class="screen hidden">
+    <h2>PAUSED</h2>
 
-        // Lane layout boundaries
-        let laneEdges = [40, 280, 520, 760]; 
-        
-        ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = 3;
-        for (let i = 0; i < laneEdges.length; i++) {
-            ctx.beginPath();
-            ctx.moveTo(horizonX + (laneEdges[i] - horizonX) * 0.05, horizonY);
-            ctx.lineTo(laneEdges[i], groundY);
-            ctx.stroke();
-        }
+    <p>Your Run-Ride game is waiting.</p>
 
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
-        ctx.lineWidth = 1;
-        let lineOffset = (gameTime * currentSpeed) % 40;
-        for (let y = horizonY; y < groundY; y += 30) {
-            let progressiveY = y + lineOffset * ((y - horizonY) / 320);
-            if (progressiveY < groundY) {
-                ctx.beginPath();
-                ctx.moveTo(0, progressiveY);
-                ctx.lineTo(canvas.width, progressiveY);
-                ctx.stroke();
-            }
-        }
+    <button id="resume-button" type="button">
+      CONTINUE
+    </button>
+  </div>
 
-        spawnObstacle();
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-            let obs = obstacles[i];
-            obs.z -= currentSpeed; 
-
-            let scale = (500 - obs.z) / 320; 
-            if (scale < 0) scale = 0;
-
-            let startLaneX = horizonX + (lanePositions[obs.lane] - horizonX) * 0.05;
-            let renderX = startLaneX + (lanePositions[obs.lane] - startLaneX) * scale;
-            let renderY = horizonY + (groundY - horizonY) * scale;
-            
-            let w3D = obs.width * scale;
-            let h3D = obs.height * scale;
-
-            ctx.fillStyle = '#ff007f';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#ff007f';
-            ctx.fillRect(renderX - w3D / 2, renderY - h3D, w3D, h3D);
-            ctx.shadowBlur = 0; 
-
-            if (obs.z <= 60 && obs.z >= 15) {
-                if (playerLane === obs.lane) {
-                    gameOver();
-                    return;
-                }
-            }
-
-            if (obs.z < 0) obstacles.splice(i, 1);
-        }
-
-        targetX = lanePositions[playerLane];
-        playerX += (targetX - playerX) * 0.25;
-
-        let playerY = 440;
-        
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.beginPath();
-        ctx.ellipse(playerX, playerY + 25, 30, 8, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#00f0ff';
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#00f0ff';
-        ctx.fillRect(playerX - 22, playerY + 12, 44, 8);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(playerX - 8, playerY - 35, 16, 45); 
-        ctx.fillStyle = '#ff007f';
-        ctx.fillRect(playerX - 10, playerY - 48, 20, 13); 
-        
-        ctx.shadowBlur = 0; 
-
-        requestAnimationFrame(animate);
-    }
-</script>
-
+  <script src="game.js"></script>
 </body>
 </html>
