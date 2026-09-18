@@ -214,8 +214,9 @@ function createPlayer() {
     Billboard keeps image facing the camera.
     Do NOT rotate it by Math.PI.
   */
-  playerPicture.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;
-
+  playerPicture.parent = playerRoot;
+playerPicture.position.y = 0;
+  playerPicture.rotation.y = Math.PI;
   const pictureMaterial = new BABYLON.StandardMaterial(
     "runnerPictureMaterial_" + selectedRunner,
     scene
@@ -240,11 +241,13 @@ function createPlayer() {
   */
   pictureTexture.uScale = 0.5;
 
-  if (selectedRunner === "male") {
-    pictureTexture.uOffset = 0;
-  } else {
-    pictureTexture.uOffset = 0.5;
-  }
+  pictureTexture.uScale = -0.5;
+
+if (selectedRunner === "male") {
+  pictureTexture.uOffset = 0.5;
+} else {
+  pictureTexture.uOffset = 1;
+}
 
   pictureMaterial.diffuseTexture = pictureTexture;
   pictureMaterial.opacityTexture = pictureTexture;
