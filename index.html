@@ -32,6 +32,36 @@
     <span>DISTANCE</span>
     <strong id="distance">0m</strong>
   </div>
+
+  <div class="stat best-stat">
+    <span>BEST</span>
+    <strong id="best-score">0</strong>
+  </div>
+</div>
+
+<button id="pause-button" class="pause-button">Ⅱ</button>
+
+<div id="powerups">
+  <div id="shield-status" class="powerup-status hidden">
+    🛡 SHIELD
+  </div>
+
+  <div id="magnet-status" class="powerup-status hidden">
+    🧲 MAGNET
+  </div>
+</div>
+
+  <h1>SKY RUN</h1>
+
+  <div class="stat">
+    <span>COINS</span>
+    <strong id="coins">0</strong>
+  </div>
+
+  <div class="stat distance-stat">
+    <span>DISTANCE</span>
+    <strong id="distance">0m</strong>
+  </div>
   </div>
   <canvas id="gameCanvas"></canvas>
 
@@ -67,7 +97,13 @@
     <p>Final score: <span id="final-score">0</span></p>
     <button id="restart-button">PLAY AGAIN</button>
   </div>
+<div id="pause-screen" class="screen hidden">
+  <h2>PAUSED</h2>
 
+  <p>Take a break. Your Sky Run is waiting.</p>
+
+  <button id="resume-button">CONTINUE</button>
+</div>
   <script src="game.js"></script>
 </body>
 </html>
