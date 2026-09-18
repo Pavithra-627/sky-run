@@ -1,6 +1,7 @@
 const canvas = document.getElementById("gameCanvas");
 
 const scoreText = document.getElementById("score");
+const coinsText = document.getElementById("coins");
 const distanceText = document.getElementById("distance");
 const finalScoreText = document.getElementById("final-score");
 
@@ -27,13 +28,15 @@ let lane = 1;
 let targetX = 0;
 
 let score = 0;
+let coinCount = 0;
 let distance = 0;
-let gameSpeed = 0.34;
-let elapsedFrames = 0;
+let gameSpeed = 0.28;
+let frames = 0;
 
 let obstacles = [];
 let coins = [];
 let roadPieces = [];
+let movingRoadObjects = [];
 
 let obstacleTimer = 0;
 let coinTimer = 0;
@@ -56,58 +59,58 @@ function createMaterial(name, color, glowColor) {
 function createScene() {
   scene = new BABYLON.Scene(engine);
 
-  scene.clearColor = new BABYLON.Color4(0.025, 0.02, 0.11, 1);
+  scene.clearColor = new BABYLON.Color4(0.02, 0.01, 0.09, 1);
   scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-  scene.fogDensity = 0.016;
-  scene.fogColor = new BABYLON.Color3(0.05, 0.02, 0.18);
+  scene.fogDensity = 0.014;
+  scene.fogColor = new BABYLON.Color3(0.04, 0.01, 0.16);
 
   const camera = new BABYLON.FollowCamera(
     "followCamera",
-    new BABYLON.Vector3(0, 5, -11),
+    new BABYLON.Vector3(0, 5, -12),
     scene
   );
 
   camera.radius = 12;
-  camera.heightOffset = 4.2;
+  camera.heightOffset = 4.1;
   camera.rotationOffset = 180;
   camera.cameraAcceleration = 0.08;
   camera.maxCameraSpeed = 7;
   camera.fov = 0.9;
 
   const light = new BABYLON.HemisphericLight(
-    "light",
+    "skyLight",
     new BABYLON.Vector3(0, 1, 0),
     scene
   );
 
   light.intensity = 0.85;
-  light.diffuse = new BABYLON.Color3(0.45, 0.3, 0.9);
-  light.groundColor = new BABYLON.Color3(0.03, 0.04, 0.15);
+  light.diffuse = new BABYLON.Color3(0.5, 0.35, 0.95);
+  light.groundColor = new BABYLON.Color3(0.02, 0.03, 0.12);
 
   const cyanLight = new BABYLON.PointLight(
     "cyanLight",
-    new BABYLON.Vector3(0, 6, -3),
+    new BABYLON.Vector3(0, 6, -5),
     scene
   );
 
   cyanLight.diffuse = new BABYLON.Color3(0, 0.9, 1);
   cyanLight.intensity = 1.5;
-  cyanLight.range = 30;
+  cyanLight.range = 32;
 
   const pinkLight = new BABYLON.PointLight(
     "pinkLight",
-    new BABYLON.Vector3(0, 8, 18),
+    new BABYLON.Vector3(0, 8, 20),
     scene
   );
 
-  pinkLight.diffuse = new BABYLON.Color3(1, 0.05, 0.65);
-  pinkLight.intensity = 1.2;
-  pinkLight.range = 32;
+  pinkLight.diffuse = new BABYLON.Color3(1, 0.04, 0.62);
+  pinkLight.intensity = 1.3;
+  pinkLight.range = 35;
 
   createSky();
   createRoad();
-  createPlayer();
   createCity();
+  createPlayer();
 
   camera.lockedTarget = playerRoot;
 
@@ -117,215 +120,132 @@ function createScene() {
 function createSky() {
   const sky = BABYLON.MeshBuilder.CreateSphere(
     "sky",
-    { diameter: 180, sideOrientation: BABYLON.Mesh.BACKSIDE },
+    {
+      diameter: 180,
+      sideOrientation: BABYLON.Mesh.BACKSIDE
+    },
     scene
   );
 
-  const material = new BABYLON.StandardMaterial("skyMaterial", scene);
+  const skyMaterial = new BABYLON.StandardMaterial("skyMaterial", scene);
 
-  material.diffuseColor = new BABYLON.Color3(0.03, 0.01, 0.13);
-  material.emissiveColor = new BABYLON.Color3(0.06, 0.01, 0.16);
-  material.specularColor = BABYLON.Color3.Black();
+  skyMaterial.diffuseColor = new BABYLON.Color3(0.02, 0.01, 0.10);
+  skyMaterial.emissiveColor = new BABYLON.Color3(0.05, 0.01, 0.16);
+  skyMaterial.specularColor = BABYLON.Color3.Black();
 
-  sky.material = material;
+  sky.material = skyMaterial;
 }
 
 function createRoad() {
   const roadMaterial = createMaterial(
     "roadMaterial",
-    new BABYLON.Color3(0.03, 0.07, 0.18),
-    new BABYLON.Color3(0.02, 0.07, 0.15)
+    new BABYLON.Color3(0.025, 0.06, 0.18),
+    new BABYLON.Color3(0.01, 0.06, 0.16)
   );
 
-  const cyanMaterial = createMaterial(
-    "cyanMaterial",
-    new BABYLON.Color3(0.0, 0.8, 1.0),
-    new BABYLON.Color3(0.0, 0.9, 1.0)
+  const railMaterial = createMaterial(
+    "railMaterial",
+    new BABYLON.Color3(0, 0.75, 1),
+    new BABYLON.Color3(0, 0.95, 1)
   );
 
-  const pinkMaterial = createMaterial(
-    "pinkMaterial",
-    new BABYLON.Color3(1.0, 0.05, 0.65),
-    new BABYLON.Color3(1.0, 0.02, 0.55)
+  const lineMaterial = createMaterial(
+    "lineMaterial",
+    new BABYLON.Color3(1, 0.05, 0.65),
+    new BABYLON.Color3(1, 0.02, 0.60)
   );
 
-  for (let i = 0; i < 10; i++) {
-    const z = i * 12 - 12;
+  for (let i = 0; i < 12; i++) {
+    const z = i * 10 - 10;
 
     const road = BABYLON.MeshBuilder.CreateBox(
       "road_" + i,
-      { width: 10, height: 0.3, depth: 12 },
+      { width: 10, height: 0.28, depth: 10 },
       scene
     );
 
     road.position = new BABYLON.Vector3(0, 0, z);
     road.material = roadMaterial;
+
     roadPieces.push(road);
+    movingRoadObjects.push(road);
 
     const leftRail = BABYLON.MeshBuilder.CreateBox(
       "leftRail_" + i,
-      { width: 0.16, height: 0.25, depth: 12 },
+      { width: 0.13, height: 0.28, depth: 10 },
       scene
     );
 
-    leftRail.position = new BABYLON.Vector3(-5, 0.25, z);
-    leftRail.material = cyanMaterial;
+    leftRail.position = new BABYLON.Vector3(-5, 0.26, z);
+    leftRail.material = railMaterial;
+    movingRoadObjects.push(leftRail);
 
     const rightRail = BABYLON.MeshBuilder.CreateBox(
       "rightRail_" + i,
-      { width: 0.16, height: 0.25, depth: 12 },
+      { width: 0.13, height: 0.28, depth: 10 },
       scene
     );
 
-    rightRail.position = new BABYLON.Vector3(5, 0.25, z);
-    rightRail.material = cyanMaterial;
+    rightRail.position = new BABYLON.Vector3(5, 0.26, z);
+    rightRail.material = railMaterial;
+    movingRoadObjects.push(rightRail);
 
-    for (let mark = 0; mark < 4; mark++) {
-      const lineZ = z - 4 + mark * 3;
+    for (let mark = 0; mark < 3; mark++) {
+      const markZ = z - 3 + mark * 3.2;
 
-      [-1.5, 1.5].forEach(function (x, side) {
+      [-1.5, 1.5].forEach(function (x, index) {
         const line = BABYLON.MeshBuilder.CreateBox(
-          "line_" + i + "_" + mark + "_" + side,
-          { width: 0.08, height: 0.05, depth: 1.3 },
+          "laneLine_" + i + "_" + mark + "_" + index,
+          { width: 0.09, height: 0.04, depth: 1.4 },
           scene
         );
 
-        line.position = new BABYLON.Vector3(x, 0.2, lineZ);
-        line.material = pinkMaterial;
+        line.position = new BABYLON.Vector3(x, 0.18, markZ);
+        line.material = lineMaterial;
+        movingRoadObjects.push(line);
       });
     }
   }
 }
 
-function createPlayer() {
-  playerRoot = new BABYLON.TransformNode("playerRoot", scene);
-  playerRoot.position = new BABYLON.Vector3(0, 0.72, 0);
-
-  const suit = createMaterial(
-    "suit",
-    new BABYLON.Color3(0.13, 0.03, 0.30),
-    new BABYLON.Color3(0.34, 0.01, 0.55)
-  );
-
-  const helmet = createMaterial(
-    "helmet",
-    new BABYLON.Color3(0.02, 0.30, 0.48),
-    new BABYLON.Color3(0.0, 0.78, 1.0)
-  );
-
-  const shoe = createMaterial(
-    "shoe",
-    new BABYLON.Color3(0.05, 0.12, 0.22),
-    new BABYLON.Color3(0.0, 0.4, 0.85)
-  );
-
-  const body = BABYLON.MeshBuilder.CreateCapsule(
-    "body",
-    { height: 1.3, radius: 0.26 },
-    scene
-  );
-
-  body.parent = playerRoot;
-  body.position.y = 1.15;
-  body.material = suit;
-
-  const head = BABYLON.MeshBuilder.CreateSphere(
-    "head",
-    { diameter: 0.5 },
-    scene
-  );
-
-  head.parent = playerRoot;
-  head.position.y = 2.0;
-  head.material = helmet;
-
-  leftArm = BABYLON.MeshBuilder.CreateCapsule(
-    "leftArm",
-    { height: 0.9, radius: 0.11 },
-    scene
-  );
-
-  leftArm.parent = playerRoot;
-  leftArm.position = new BABYLON.Vector3(-0.38, 1.35, 0);
-  leftArm.material = suit;
-
-  rightArm = BABYLON.MeshBuilder.CreateCapsule(
-    "rightArm",
-    { height: 0.9, radius: 0.11 },
-    scene
-  );
-
-  rightArm.parent = playerRoot;
-  rightArm.position = new BABYLON.Vector3(0.38, 1.35, 0);
-  rightArm.material = suit;
-
-  leftLeg = BABYLON.MeshBuilder.CreateCapsule(
-    "leftLeg",
-    { height: 1.0, radius: 0.13 },
-    scene
-  );
-
-  leftLeg.parent = playerRoot;
-  leftLeg.position = new BABYLON.Vector3(-0.18, 0.35, 0);
-  leftLeg.material = shoe;
-
-  rightLeg = BABYLON.MeshBuilder.CreateCapsule(
-    "rightLeg",
-    { height: 1.0, radius: 0.13 },
-    scene
-  );
-
-  rightLeg.parent = playerRoot;
-  rightLeg.position = new BABYLON.Vector3(0.18, 0.35, 0);
-  rightLeg.material = shoe;
-
-  const glow = BABYLON.MeshBuilder.CreateDisc(
-    "playerGlow",
-    { radius: 0.8, tessellation: 32 },
-    scene
-  );
-
-  glow.parent = playerRoot;
-  glow.position.y = -0.65;
-  glow.rotation.x = Math.PI / 2;
-
-  const glowMaterial = createMaterial(
-    "glowMaterial",
-    new BABYLON.Color3(0.0, 0.8, 1.0),
-    new BABYLON.Color3(0.0, 0.9, 1.0)
-  );
-
-  glow.material = glowMaterial;
-}
-
 function createCity() {
-  const buildings = [
+  const buildingMaterials = [
     createMaterial(
       "blueBuilding",
-      new BABYLON.Color3(0.03, 0.10, 0.28),
-      new BABYLON.Color3(0.02, 0.15, 0.42)
+      new BABYLON.Color3(0.03, 0.08, 0.24),
+      new BABYLON.Color3(0.02, 0.12, 0.42)
     ),
     createMaterial(
       "purpleBuilding",
-      new BABYLON.Color3(0.14, 0.03, 0.30),
+      new BABYLON.Color3(0.12, 0.02, 0.28),
       new BABYLON.Color3(0.24, 0.02, 0.48)
     ),
     createMaterial(
       "pinkBuilding",
-      new BABYLON.Color3(0.25, 0.02, 0.20),
-      new BABYLON.Color3(0.42, 0.01, 0.32)
+      new BABYLON.Color3(0.22, 0.02, 0.18),
+      new BABYLON.Color3(0.44, 0.01, 0.30)
     )
   ];
 
-  for (let i = 0; i < 46; i++) {
+  const signMaterial = createMaterial(
+    "signMaterial",
+    new BABYLON.Color3(0, 0.75, 1),
+    new BABYLON.Color3(0, 1, 1)
+  );
+
+  for (let i = 0; i < 50; i++) {
     const side = i % 2 === 0 ? -1 : 1;
-    const z = 9 + Math.floor(i / 2) * 7;
+    const z = 8 + Math.floor(i / 2) * 6;
     const width = 2 + Math.random() * 2.5;
-    const height = 5 + Math.random() * 14;
+    const height = 5 + Math.random() * 15;
 
     const building = BABYLON.MeshBuilder.CreateBox(
       "building_" + i,
-      { width, height, depth: 3 + Math.random() * 3 },
+      {
+        width: width,
+        height: height,
+        depth: 3 + Math.random() * 3
+      },
       scene
     );
 
@@ -335,32 +255,154 @@ function createCity() {
       z
     );
 
-    building.material = buildings[i % buildings.length];
+    building.material =
+      buildingMaterials[i % buildingMaterials.length];
+
+    if (i % 3 === 0) {
+      const sign = BABYLON.MeshBuilder.CreateBox(
+        "sign_" + i,
+        {
+          width: width * 0.65,
+          height: 0.5,
+          depth: 0.08
+        },
+        scene
+      );
+
+      sign.position = new BABYLON.Vector3(
+        building.position.x - side * (width / 2 + 0.06),
+        building.position.y + height * 0.1,
+        building.position.z
+      );
+
+      sign.material = signMaterial;
+    }
   }
+}
+
+function createPlayer() {
+  playerRoot = new BABYLON.TransformNode("playerRoot", scene);
+  playerRoot.position = new BABYLON.Vector3(0, 0.78, 0);
+
+  const suitMaterial = createMaterial(
+    "runnerSuit",
+    new BABYLON.Color3(0.12, 0.02, 0.30),
+    new BABYLON.Color3(0.32, 0.01, 0.55)
+  );
+
+  const helmetMaterial = createMaterial(
+    "runnerHelmet",
+    new BABYLON.Color3(0.02, 0.30, 0.48),
+    new BABYLON.Color3(0, 0.78, 1)
+  );
+
+  const shoeMaterial = createMaterial(
+    "runnerShoe",
+    new BABYLON.Color3(0.04, 0.10, 0.20),
+    new BABYLON.Color3(0, 0.42, 0.90)
+  );
+
+  const body = BABYLON.MeshBuilder.CreateCapsule(
+    "runnerBody",
+    { height: 1.35, radius: 0.27 },
+    scene
+  );
+
+  body.parent = playerRoot;
+  body.position.y = 1.15;
+  body.material = suitMaterial;
+
+  const head = BABYLON.MeshBuilder.CreateSphere(
+    "runnerHead",
+    { diameter: 0.52 },
+    scene
+  );
+
+  head.parent = playerRoot;
+  head.position.y = 2.05;
+  head.material = helmetMaterial;
+
+  leftArm = BABYLON.MeshBuilder.CreateCapsule(
+    "leftArm",
+    { height: 0.92, radius: 0.11 },
+    scene
+  );
+
+  leftArm.parent = playerRoot;
+  leftArm.position = new BABYLON.Vector3(-0.42, 1.40, 0);
+  leftArm.material = suitMaterial;
+
+  rightArm = BABYLON.MeshBuilder.CreateCapsule(
+    "rightArm",
+    { height: 0.92, radius: 0.11 },
+    scene
+  );
+
+  rightArm.parent = playerRoot;
+  rightArm.position = new BABYLON.Vector3(0.42, 1.40, 0);
+  rightArm.material = suitMaterial;
+
+  leftLeg = BABYLON.MeshBuilder.CreateCapsule(
+    "leftLeg",
+    { height: 1.05, radius: 0.14 },
+    scene
+  );
+
+  leftLeg.parent = playerRoot;
+  leftLeg.position = new BABYLON.Vector3(-0.19, 0.32, 0);
+  leftLeg.material = shoeMaterial;
+
+  rightLeg = BABYLON.MeshBuilder.CreateCapsule(
+    "rightLeg",
+    { height: 1.05, radius: 0.14 },
+    scene
+  );
+
+  rightLeg.parent = playerRoot;
+  rightLeg.position = new BABYLON.Vector3(0.19, 0.32, 0);
+  rightLeg.material = shoeMaterial;
+
+  const glow = BABYLON.MeshBuilder.CreateDisc(
+    "runnerGlow",
+    { radius: 0.75, tessellation: 32 },
+    scene
+  );
+
+  glow.parent = playerRoot;
+  glow.position.y = -0.73;
+  glow.rotation.x = Math.PI / 2;
+
+  const glowMaterial = createMaterial(
+    "runnerGlowMaterial",
+    new BABYLON.Color3(0, 0.65, 1),
+    new BABYLON.Color3(0, 0.95, 1)
+  );
+
+  glow.material = glowMaterial;
 }
 
 function createObstacle() {
   const obstacleLane = Math.floor(Math.random() * 3);
 
-  const material = createMaterial(
-    "barrier_" + Date.now(),
+  const barrierMaterial = createMaterial(
+    "barrierMaterial_" + Date.now(),
     new BABYLON.Color3(0.7, 0.03, 0.08),
-    new BABYLON.Color3(1.0, 0.03, 0.04)
+    new BABYLON.Color3(1, 0.03, 0.04)
   );
 
   const barrier = BABYLON.MeshBuilder.CreateBox(
     "dangerBarrier",
-    { width: 1.9, height: 1.15, depth: 0.5 },
+    { width: 1.85, height: 1.05, depth: 0.48 },
     scene
   );
 
   barrier.position = new BABYLON.Vector3(
     lanePositions[obstacleLane],
-    0.72,
-    46
+    0.65,
+    48
   );
 
-  barrier.material = material;
+  barrier.material = barrierMaterial;
 
   obstacles.push({
     mesh: barrier,
@@ -368,35 +410,45 @@ function createObstacle() {
   });
 }
 
-function createCoinLine() {
-  const coinLane = Math.floor(Math.random() * 3);
-
-  const material = createMaterial(
-    "coin_" + Date.now(),
-    new BABYLON.Color3(1.0, 0.65, 0.0),
-    new BABYLON.Color3(1.0, 0.78, 0.0)
+function createCoin(x, z, y) {
+  const coinMaterial = createMaterial(
+    "coinMaterial_" + Date.now() + "_" + Math.random(),
+    new BABYLON.Color3(1, 0.62, 0),
+    new BABYLON.Color3(1, 0.80, 0.02)
   );
 
-  for (let i = 0; i < 6; i++) {
-    const coin = BABYLON.MeshBuilder.CreateTorus(
-      "energyCoin",
-      { diameter: 0.58, thickness: 0.14, tessellation: 16 },
-      scene
-    );
+  const coin = BABYLON.MeshBuilder.CreateCylinder(
+    "skyCoin",
+    {
+      height: 0.14,
+      diameter: 0.58,
+      tessellation: 20
+    },
+    scene
+  );
 
-    coin.position = new BABYLON.Vector3(
-      lanePositions[coinLane],
-      1.15 + (i % 2) * 0.12,
-      42 + i * 2.1
-    );
+  coin.position = new BABYLON.Vector3(x, y, z);
+  coin.rotation.x = Math.PI / 2;
+  coin.material = coinMaterial;
 
-    coin.rotation.x = Math.PI / 2;
-    coin.material = material;
+  coins.push({ mesh: coin, laneX: x });
+}
 
-    coins.push({
-      mesh: coin,
-      lane: coinLane
-    });
+function createCoinLine() {
+  const laneNumber = Math.floor(Math.random() * 3);
+  const x = lanePositions[laneNumber];
+
+  for (let i = 0; i < 10; i++) {
+    createCoin(x, 35 + i * 2.1, 1.1);
+  }
+}
+
+function createZigZagCoins() {
+  for (let i = 0; i < 12; i++) {
+    const laneNumber = i % 3;
+    const x = lanePositions[laneNumber];
+
+    createCoin(x, 34 + i * 2.2, 1.1);
   }
 }
 
@@ -425,7 +477,7 @@ function jump() {
     "position.y",
     60,
     15,
-    0.72,
+    0.78,
     2.45,
     BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
   );
@@ -438,13 +490,13 @@ function jump() {
       60,
       15,
       2.45,
-      0.72,
+      0.78,
       BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     );
 
     setTimeout(function () {
       jumping = false;
-    }, 270);
+    }, 280);
   }, 250);
 }
 
@@ -463,12 +515,13 @@ function startGame() {
   lane = 1;
   targetX = 0;
   playerRoot.position.x = 0;
-  playerRoot.position.y = 0.72;
+  playerRoot.position.y = 0.78;
 
   score = 0;
+  coinCount = 0;
   distance = 0;
-  gameSpeed = 0.34;
-  elapsedFrames = 0;
+  gameSpeed = 0.28;
+  frames = 0;
   obstacleTimer = 0;
   coinTimer = 0;
 
@@ -476,6 +529,7 @@ function startGame() {
   jumping = false;
 
   scoreText.textContent = "0";
+  coinsText.textContent = "0";
   distanceText.textContent = "0m";
 
   startScreen.classList.add("hidden");
@@ -490,20 +544,22 @@ function gameOver() {
   gameOverScreen.classList.remove("hidden");
 }
 
-function updateRunningAnimation() {
-  const run = Math.sin(elapsedFrames * 0.25) * 0.65;
+function updateRunAnimation() {
+  const runAmount = Math.sin(frames * 0.28) * 0.70;
 
-  leftArm.rotation.x = run;
-  rightArm.rotation.x = -run;
+  leftArm.rotation.x = runAmount;
+  rightArm.rotation.x = -runAmount;
 
-  leftLeg.rotation.x = -run;
-  rightLeg.rotation.x = run;
+  leftLeg.rotation.x = -runAmount;
+  rightLeg.rotation.x = runAmount;
+
+  playerRoot.position.y += Math.sin(frames * 0.56) * 0.004;
 }
 
 function updateGame() {
   if (!playing) return;
 
-  elapsedFrames++;
+  frames++;
 
   playerRoot.position.x +=
     (targetX - playerRoot.position.x) * 0.16;
@@ -511,49 +567,54 @@ function updateGame() {
   playerRoot.rotation.z =
     (targetX - playerRoot.position.x) * -0.12;
 
-  updateRunningAnimation();
+  updateRunAnimation();
 
-  distance += 0.09;
+  distance += 0.08;
   score += 1;
 
   scoreText.textContent = score;
   distanceText.textContent = Math.floor(distance) + "m";
 
-  gameSpeed += 0.0001;
+  gameSpeed += 0.00008;
 
   obstacleTimer++;
   coinTimer++;
 
-  /* First barriers appear after a short safe starting period. */
-  if (elapsedFrames > 220 && obstacleTimer > 170) {
+  /* First 4 seconds: no barriers, so users learn controls. */
+  if (frames > 240 && obstacleTimer > 190) {
     createObstacle();
     obstacleTimer = 0;
   }
 
-  /* More coin lines appear regularly. */
-  if (coinTimer > 90) {
-    createCoinLine();
+  /* Coin patterns appear much more often than obstacles. */
+  if (coinTimer > 82) {
+    if (Math.random() > 0.45) {
+      createCoinLine();
+    } else {
+      createZigZagCoins();
+    }
+
     coinTimer = 0;
   }
 
-  roadPieces.forEach(function (road) {
-    road.position.z -= gameSpeed;
+  movingRoadObjects.forEach(function (object) {
+    object.position.z -= gameSpeed;
 
-    if (road.position.z < -18) {
-      road.position.z += 120;
+    if (object.position.z < -16) {
+      object.position.z += 120;
     }
   });
 
   obstacles.forEach(function (item, index) {
     item.mesh.position.z -= gameSpeed;
 
-    const hitPlayer =
-      item.mesh.position.z < 1.25 &&
-      item.mesh.position.z > -1.15 &&
+    const hitBarrier =
+      item.mesh.position.z < 1.2 &&
+      item.mesh.position.z > -1.2 &&
       item.lane === lane &&
       !jumping;
 
-    if (hitPlayer) {
+    if (hitBarrier) {
       gameOver();
     }
 
@@ -565,15 +626,23 @@ function updateGame() {
 
   coins.forEach(function (item, index) {
     item.mesh.position.z -= gameSpeed;
-    item.mesh.rotation.z += 0.10;
+    item.mesh.rotation.z += 0.12;
+
+    const isSameLane =
+      Math.abs(item.laneX - lanePositions[lane]) < 0.1;
 
     const collectCoin =
-      item.mesh.position.z < 1.35 &&
+      item.mesh.position.z < 1.45 &&
       item.mesh.position.z > -1.2 &&
-      item.lane === lane;
+      isSameLane;
 
     if (collectCoin) {
-      score += 15;
+      coinCount++;
+      score += 10;
+
+      coinsText.textContent = coinCount;
+      scoreText.textContent = score;
+
       item.mesh.dispose();
       coins.splice(index, 1);
     }
