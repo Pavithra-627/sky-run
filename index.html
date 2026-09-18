@@ -36,13 +36,30 @@
   <canvas id="gameCanvas"></canvas>
 
   <div id="start-screen" class="screen">
-    <h2>SKY RUN</h2>
-    <p>Run through the neon skies.</p>
-    <p class="instructions">
-      Swipe left/right to change lanes.<br />
-      Swipe up to jump.
-    </p>
-    <button id="start-button">TAP TO PLAY</button>
+  <h2>SKY RUN</h2>
+
+  <p>Choose your runner</p>
+
+  <div class="character-buttons">
+    <button id="male-button" class="character-button selected">
+      <span class="character-icon male-icon">♂</span>
+      <strong>RUNNER</strong>
+      <small>CYAN SUIT</small>
+    </button>
+
+    <button id="female-button" class="character-button">
+      <span class="character-icon female-icon">♀</span>
+      <strong>RUNNER</strong>
+      <small>PINK SUIT</small>
+    </button>
+  </div>
+
+  <p class="instructions">
+    Swipe left or right to change lanes.<br />
+    Swipe up to jump over barriers.
+  </p>
+
+  <button id="start-button">TAP TO PLAY</button>
   </div>
 
   <div id="game-over-screen" class="screen hidden">
