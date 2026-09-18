@@ -125,3 +125,60 @@ button {
 .hidden {
   display: none;
 }
+.pause-button {
+  position: fixed;
+  top: 78px;
+  right: 14px;
+  z-index: 30;
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid #a4ffff;
+  border-radius: 50%;
+  color: white;
+  background: rgba(7, 18, 48, 0.85);
+  box-shadow: 0 0 12px #00eaff;
+  font-size: 20px;
+  line-height: 1;
+}
+
+#powerups {
+  position: fixed;
+  top: 130px;
+  left: 12px;
+  z-index: 25;
+  pointer-events: none;
+}
+
+.powerup-status {
+  width: fit-content;
+  margin-bottom: 8px;
+  padding: 7px 10px;
+  border: 1px solid #7affff;
+  border-radius: 7px;
+  color: #dfffff;
+  background: rgba(3, 20, 45, 0.84);
+  box-shadow: 0 0 10px #00eaff;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.best-stat {
+  position: fixed;
+  top: 77px;
+  left: 14px;
+  min-width: 60px;
+}
+
+.distance-stat {
+  position: fixed;
+  top: 77px;
+  right: 70px;
+  min-width: 82px;
+}
+
+#pause-screen {
+  z-index: 50;
+}
