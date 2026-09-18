@@ -27,8 +27,8 @@ let playerShadow;
 let playing = false;
 let paused = false;
 let jumping = false;
-let selectedRunner = "male";
 
+let selectedRunner = "male";
 let lane = 1;
 let targetX = 0;
 
@@ -52,6 +52,10 @@ let bestScore =
   Number(localStorage.getItem("runRideBestScore")) || 0;
 
 const lanePositions = [-3, 0, 3];
+
+/*
+  This must match the filename shown in your GitHub repository.
+*/
 const runnerImage = "image.jpg (2).png";
 
 bestScoreText.textContent = bestScore;
@@ -205,6 +209,11 @@ function createPlayer() {
 
   playerPicture.parent = playerRoot;
   playerPicture.position.y = 0;
+
+  /*
+    Billboard keeps image facing the camera.
+    Do NOT rotate it by Math.PI.
+  */
   playerPicture.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;
 
   const pictureMaterial = new BABYLON.StandardMaterial(
@@ -222,20 +231,25 @@ function createPlayer() {
   pictureTexture.hasAlpha = true;
 
   /*
-    The uploaded picture has the male runner on the left,
-    and the female runner on the right.
+    Combined uploaded image:
+    Left side is the male runner.
+    Right side is the female runner.
+
+    uScale = 0.5 displays half of the image.
+    No negative uScale means image is not reversed.
   */
+  pictureTexture.uScale = 0.5;
+
   if (selectedRunner === "male") {
     pictureTexture.uOffset = 0;
-    pictureTexture.uScale = 0.5;
   } else {
     pictureTexture.uOffset = 0.5;
-    pictureTexture.uScale = 0.5;
   }
 
   pictureMaterial.diffuseTexture = pictureTexture;
   pictureMaterial.opacityTexture = pictureTexture;
   pictureMaterial.useAlphaFromDiffuseTexture = true;
+
   pictureMaterial.emissiveColor =
     selectedRunner === "male"
       ? new BABYLON.Color3(0, 0.35, 0.55)
@@ -260,6 +274,7 @@ function createPlayer() {
   );
 
   shadowMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+
   shadowMaterial.emissiveColor =
     selectedRunner === "male"
       ? new BABYLON.Color3(0, 0.45, 0.75)
@@ -334,6 +349,7 @@ function chooseMale() {
   selectedRunner = "male";
   maleButton.classList.add("selected");
   femaleButton.classList.remove("selected");
+
   createPlayer();
 }
 
@@ -343,6 +359,7 @@ function chooseFemale() {
   selectedRunner = "female";
   femaleButton.classList.add("selected");
   maleButton.classList.remove("selected");
+
   createPlayer();
 }
 
@@ -446,7 +463,12 @@ function endGame() {
 
   if (score > bestScore) {
     bestScore = score;
-    localStorage.setItem("runRideBestScore", bestScore);
+
+    localStorage.setItem(
+      "runRideBestScore",
+      bestScore
+    );
+
     bestScoreText.textContent = bestScore;
   }
 
@@ -610,9 +632,13 @@ canvas.addEventListener(
     const moveY = touch.screenY - touchStartY;
 
     if (Math.abs(moveX) > Math.abs(moveY)) {
-      if (moveX > 35) moveRight();
+      if (moveX > 35) {
+        moveRight();
+      }
 
-      if (moveX < -35) moveLeft();
+      if (moveX < -35) {
+        moveLeft();
+      }
     } else if (moveY < -35) {
       jump();
     }
