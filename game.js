@@ -3,15 +3,23 @@ const canvas = document.getElementById("gameCanvas");
 const scoreText = document.getElementById("score");
 const coinsText = document.getElementById("coins");
 const distanceText = document.getElementById("distance");
+const bestScoreText = document.getElementById("best-score");
 const finalScoreText = document.getElementById("final-score");
 
 const startScreen = document.getElementById("start-screen");
 const gameOverScreen = document.getElementById("game-over-screen");
+const pauseScreen = document.getElementById("pause-screen");
+
 const startButton = document.getElementById("start-button");
 const restartButton = document.getElementById("restart-button");
+const pauseButton = document.getElementById("pause-button");
+const resumeButton = document.getElementById("resume-button");
 
 const maleButton = document.getElementById("male-button");
 const femaleButton = document.getElementById("female-button");
+
+const shieldStatus = document.getElementById("shield-status");
+const magnetStatus = document.getElementById("magnet-status");
 
 const engine = new BABYLON.Engine(canvas, true, {
   preserveDrawingBuffer: true,
@@ -20,6 +28,7 @@ const engine = new BABYLON.Engine(canvas, true, {
 
 let scene;
 let playerRoot;
+let playerShield;
 let leftArm;
 let rightArm;
 let leftLeg;
@@ -28,27 +37,41 @@ let runnerParts = [];
 
 let selectedRunner = "male";
 let playing = false;
+let paused = false;
 let jumping = false;
+
 let lane = 1;
 let targetX = 0;
 
 let score = 0;
 let coinCount = 0;
 let distance = 0;
+let bestScore = Number(localStorage.getItem("skyRunBestScore")) || 0;
+
 let gameSpeed = 0.28;
 let frames = 0;
 
+let shieldActive = false;
+let shieldTime = 0;
+
+let magnetActive = false;
+let magnetTime = 0;
+
 let obstacles = [];
 let coins = [];
+let powerups = [];
 let movingRoadObjects = [];
 
 let obstacleTimer = 0;
 let coinTimer = 0;
+let powerupTimer = 0;
 
 let touchStartX = 0;
 let touchStartY = 0;
 
 const lanePositions = [-3, 0, 3];
+
+bestScoreText.textContent = bestScore;
 
 function createMaterial(name, color, glowColor) {
   const material = new BABYLON.StandardMaterial(name, scene);
@@ -433,6 +456,28 @@ function createPlayer() {
   );
 
   glow.material = glowMaterial;
+
+  playerShield = BABYLON.MeshBuilder.CreateSphere(
+    "playerShield",
+    { diameter: 3.1, segments: 16 },
+    scene
+  );
+
+  playerShield.parent = playerRoot;
+  playerShield.position.y = 0.8;
+
+  const shieldMaterial = new BABYLON.StandardMaterial(
+    "shieldMaterial",
+    scene
+  );
+
+  shieldMaterial.diffuseColor = new BABYLON.Color3(0, 0.75, 1);
+  shieldMaterial.emissiveColor = new BABYLON.Color3(0, 0.85, 1);
+  shieldMaterial.alpha = 0.18;
+  shieldMaterial.backFaceCulling = false;
+
+  playerShield.material = shieldMaterial;
+  playerShield.setEnabled(false);
 }
 
 function createObstacle() {
@@ -504,22 +549,70 @@ function createZigZagCoins() {
   }
 }
 
+function createPowerup() {
+  const type = Math.random() > 0.5 ? "shield" : "magnet";
+  const powerupLane = Math.floor(Math.random() * 3);
+
+  const material = createMaterial(
+    "powerupMaterial_" + Date.now(),
+    type === "shield"
+      ? new BABYLON.Color3(0, 0.6, 1)
+      : new BABYLON.Color3(1, 0.05, 0.65),
+    type === "shield"
+      ? new BABYLON.Color3(0, 0.9, 1)
+      : new BABYLON.Color3(1, 0.05, 0.75)
+  );
+
+  const mesh = BABYLON.MeshBuilder.CreateSphere(
+    "powerup_" + type,
+    { diameter: 0.8, segments: 12 },
+    scene
+  );
+
+  mesh.position = new BABYLON.Vector3(
+    lanePositions[powerupLane],
+    1.1,
+    48
+  );
+
+  mesh.material = material;
+
+  powerups.push({
+    mesh: mesh,
+    lane: powerupLane,
+    type: type
+  });
+}
+
+function activateShield() {
+  shieldActive = true;
+  shieldTime = 720;
+  playerShield.setEnabled(true);
+  shieldStatus.classList.remove("hidden");
+}
+
+function activateMagnet() {
+  magnetActive = true;
+  magnetTime = 720;
+  magnetStatus.classList.remove("hidden");
+}
+
 function moveLeft() {
-  if (!playing || lane === 0) return;
+  if (!playing || paused || lane === 0) return;
 
   lane--;
   targetX = lanePositions[lane];
 }
 
 function moveRight() {
-  if (!playing || lane === 2) return;
+  if (!playing || paused || lane === 2) return;
 
   lane++;
   targetX = lanePositions[lane];
 }
 
 function jump() {
-  if (!playing || jumping) return;
+  if (!playing || paused || jumping) return;
 
   jumping = true;
 
@@ -552,7 +645,7 @@ function jump() {
   }, 250);
 }
 
-function startGame() {
+function clearGameObjects() {
   obstacles.forEach(function (item) {
     item.mesh.dispose();
   });
@@ -561,8 +654,17 @@ function startGame() {
     item.mesh.dispose();
   });
 
+  powerups.forEach(function (item) {
+    item.mesh.dispose();
+  });
+
   obstacles = [];
   coins = [];
+  powerups = [];
+}
+
+function startGame() {
+  clearGameObjects();
 
   lane = 1;
   targetX = 0;
@@ -574,10 +676,22 @@ function startGame() {
   distance = 0;
   gameSpeed = 0.28;
   frames = 0;
+
   obstacleTimer = 0;
   coinTimer = 0;
+  powerupTimer = 0;
+
+  shieldActive = false;
+  shieldTime = 0;
+  magnetActive = false;
+  magnetTime = 0;
+
+  playerShield.setEnabled(false);
+  shieldStatus.classList.add("hidden");
+  magnetStatus.classList.add("hidden");
 
   playing = true;
+  paused = false;
   jumping = false;
 
   scoreText.textContent = "0";
@@ -586,14 +700,37 @@ function startGame() {
 
   startScreen.classList.add("hidden");
   gameOverScreen.classList.add("hidden");
+  pauseScreen.classList.add("hidden");
 }
 
 function gameOver() {
   if (!playing) return;
 
   playing = false;
+  paused = false;
+
+  if (score > bestScore) {
+    bestScore = score;
+    localStorage.setItem("skyRunBestScore", bestScore);
+    bestScoreText.textContent = bestScore;
+  }
+
   finalScoreText.textContent = score;
   gameOverScreen.classList.remove("hidden");
+}
+
+function pauseGame() {
+  if (!playing || paused) return;
+
+  paused = true;
+  pauseScreen.classList.remove("hidden");
+}
+
+function resumeGame() {
+  if (!playing) return;
+
+  paused = false;
+  pauseScreen.classList.add("hidden");
 }
 
 function updateRunAnimation() {
@@ -611,8 +748,40 @@ function updateRunAnimation() {
   }
 }
 
+function collectCoin(item, index) {
+  coinCount++;
+  score += 10;
+
+  coinsText.textContent = coinCount;
+  scoreText.textContent = score;
+
+  item.mesh.dispose();
+  coins.splice(index, 1);
+}
+
+function updatePowerupTimes() {
+  if (shieldActive) {
+    shieldTime--;
+
+    if (shieldTime <= 0) {
+      shieldActive = false;
+      playerShield.setEnabled(false);
+      shieldStatus.classList.add("hidden");
+    }
+  }
+
+  if (magnetActive) {
+    magnetTime--;
+
+    if (magnetTime <= 0) {
+      magnetActive = false;
+      magnetStatus.classList.add("hidden");
+    }
+  }
+}
+
 function updateGame() {
-  if (!playing) return;
+  if (!playing || paused) return;
 
   frames++;
 
@@ -623,6 +792,7 @@ function updateGame() {
     (targetX - playerRoot.position.x) * -0.12;
 
   updateRunAnimation();
+  updatePowerupTimes();
 
   distance += 0.08;
   score += 1;
@@ -634,6 +804,7 @@ function updateGame() {
 
   obstacleTimer++;
   coinTimer++;
+  powerupTimer++;
 
   if (frames > 240 && obstacleTimer > 190) {
     createObstacle();
@@ -648,6 +819,11 @@ function updateGame() {
     }
 
     coinTimer = 0;
+  }
+
+  if (frames > 360 && powerupTimer > 520) {
+    createPowerup();
+    powerupTimer = 0;
   }
 
   movingRoadObjects.forEach(function (object) {
@@ -668,6 +844,17 @@ function updateGame() {
       !jumping;
 
     if (hitBarrier) {
+      if (shieldActive) {
+        shieldActive = false;
+        shieldTime = 0;
+        playerShield.setEnabled(false);
+        shieldStatus.classList.add("hidden");
+
+        item.mesh.dispose();
+        obstacles.splice(index, 1);
+        return;
+      }
+
       gameOver();
     }
 
@@ -684,102 +871,35 @@ function updateGame() {
     const isSameLane =
       Math.abs(item.laneX - lanePositions[lane]) < 0.1;
 
-    const collectCoin =
+    const nearPlayer =
       item.mesh.position.z < 1.45 &&
-      item.mesh.position.z > -1.2 &&
-      isSameLane;
+      item.mesh.position.z > -1.2;
 
-    if (collectCoin) {
-      coinCount++;
-      score += 10;
+    if (magnetActive) {
+      const horizontalGap =
+        Math.abs(item.mesh.position.x - playerRoot.position.x);
 
-      coinsText.textContent = coinCount;
-      scoreText.textContent = score;
+      if (item.mesh.position.z < 8 && horizontalGap < 5) {
+        item.mesh.position.x +=
+          (playerRoot.position.x - item.mesh.position.x) * 0.14;
 
-      item.mesh.dispose();
-      coins.splice(index, 1);
+        item.mesh.position.y +=
+          (1.1 - item.mesh.position.y) * 0.10;
+      }
+    }
+
+    const magnetCollect =
+      magnetActive &&
+      item.mesh.position.z < 1.8 &&
+      item.mesh.position.z > -1.3 &&
+      Math.abs(item.mesh.position.x - playerRoot.position.x) < 1.2;
+
+    if ((nearPlayer && isSameLane) || magnetCollect) {
+      collectCoin(item, index);
+      return;
     }
 
     if (item.mesh.position.z < -12) {
       item.mesh.dispose();
       coins.splice(index, 1);
-    }
-  });
-}
-
-maleButton.addEventListener("click", function () {
-  if (playing) return;
-
-  selectedRunner = "male";
-  maleButton.classList.add("selected");
-  femaleButton.classList.remove("selected");
-  createPlayer();
-});
-
-femaleButton.addEventListener("click", function () {
-  if (playing) return;
-
-  selectedRunner = "female";
-  femaleButton.classList.add("selected");
-  maleButton.classList.remove("selected");
-  createPlayer();
-});
-
-document.addEventListener("keydown", function (event) {
-  if (event.key === "ArrowLeft") moveLeft();
-
-  if (event.key === "ArrowRight") moveRight();
-
-  if (event.code === "Space") {
-    event.preventDefault();
-    jump();
-  }
-});
-
-canvas.addEventListener(
-  "touchstart",
-  function (event) {
-    const touch = event.changedTouches[0];
-
-    touchStartX = touch.screenX;
-    touchStartY = touch.screenY;
-  },
-  { passive: true }
-);
-
-canvas.addEventListener(
-  "touchend",
-  function (event) {
-    if (!playing) return;
-
-    const touch = event.changedTouches[0];
-
-    const moveX = touch.screenX - touchStartX;
-    const moveY = touch.screenY - touchStartY;
-
-    const minimumSwipe = 35;
-
-    if (Math.abs(moveX) > Math.abs(moveY)) {
-      if (moveX > minimumSwipe) moveRight();
-
-      if (moveX < -minimumSwipe) moveLeft();
-    } else if (moveY < -minimumSwipe) {
-      jump();
-    }
-  },
-  { passive: true }
-);
-
-startButton.addEventListener("click", startGame);
-restartButton.addEventListener("click", startGame);
-
-scene = createScene();
-
-engine.runRenderLoop(function () {
-  updateGame();
-  scene.render();
-});
-
-window.addEventListener("resize", function () {
-  engine.resize();
-});
+ 
