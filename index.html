@@ -8,7 +8,7 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   />
 
-  <title>Sky Run - 3D Cyber Runner</title>
+  <title>Run-Ride</title>
 
   <link rel="stylesheet" href="style.css" />
 
@@ -22,7 +22,7 @@
       <strong id="score">0</strong>
     </div>
 
-    <h1>SKY RUN</h1>
+    <h1>RUN-RIDE</h1>
 
     <div class="stat">
       <span>COINS</span>
@@ -44,20 +44,16 @@
     Ⅱ
   </button>
 
-  <div id="powerups">
-    <div id="shield-status" class="powerup-status hidden">
-      🛡 SHIELD
-    </div>
-
-    <div id="magnet-status" class="powerup-status hidden">
-      🧲 MAGNET
-    </div>
-  </div>
-
   <canvas id="gameCanvas"></canvas>
 
   <div id="start-screen" class="screen">
-    <h2>SKY RUN</h2>
+    <h2>RUN-RIDE</h2>
+
+    <img
+      src="runners.png"
+      alt="Male and female Run-Ride runners"
+      class="runner-picture"
+    />
 
     <p>Choose your runner</p>
 
@@ -67,9 +63,7 @@
         class="character-button selected"
         type="button"
       >
-        <span class="character-icon male-icon">♂</span>
-        <strong>RUNNER</strong>
-        <small>CYAN SUIT</small>
+        MALE RUNNER
       </button>
 
       <button
@@ -77,15 +71,13 @@
         class="character-button"
         type="button"
       >
-        <span class="character-icon female-icon">♀</span>
-        <strong>RUNNER</strong>
-        <small>PINK SUIT</small>
+        FEMALE RUNNER
       </button>
     </div>
 
     <p class="instructions">
       Swipe left or right to change lanes.<br />
-      Swipe up to jump over barriers.
+      Swipe up to jump.
     </p>
 
     <button id="start-button" type="button">
@@ -109,7 +101,7 @@
   <div id="pause-screen" class="screen hidden">
     <h2>PAUSED</h2>
 
-    <p>Take a break. Your Sky Run is waiting.</p>
+    <p>Your Run-Ride is waiting.</p>
 
     <button id="resume-button" type="button">
       CONTINUE
