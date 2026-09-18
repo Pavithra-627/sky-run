@@ -2,108 +2,120 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   />
+
   <title>Sky Run - 3D Cyber Runner</title>
 
   <link rel="stylesheet" href="style.css" />
 
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
-  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-  <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
 </head>
+
 <body>
   <div id="hud">
-  <div class="stat">
-    <span>SCORE</span>
-    <strong id="score">0</strong>
+    <div class="stat">
+      <span>SCORE</span>
+      <strong id="score">0</strong>
+    </div>
+
+    <h1>SKY RUN</h1>
+
+    <div class="stat">
+      <span>COINS</span>
+      <strong id="coins">0</strong>
+    </div>
+
+    <div class="stat distance-stat">
+      <span>DISTANCE</span>
+      <strong id="distance">0m</strong>
+    </div>
+
+    <div class="stat best-stat">
+      <span>BEST</span>
+      <strong id="best-score">0</strong>
+    </div>
   </div>
 
-  <h1>SKY RUN</h1>
+  <button id="pause-button" class="pause-button" type="button">
+    Ⅱ
+  </button>
 
-  <div class="stat">
-    <span>COINS</span>
-    <strong id="coins">0</strong>
+  <div id="powerups">
+    <div id="shield-status" class="powerup-status hidden">
+      🛡 SHIELD
+    </div>
+
+    <div id="magnet-status" class="powerup-status hidden">
+      🧲 MAGNET
+    </div>
   </div>
 
-  <div class="stat distance-stat">
-    <span>DISTANCE</span>
-    <strong id="distance">0m</strong>
-  </div>
-
-  <div class="stat best-stat">
-    <span>BEST</span>
-    <strong id="best-score">0</strong>
-  </div>
-</div>
-
-<button id="pause-button" class="pause-button">Ⅱ</button>
-
-<div id="powerups">
-  <div id="shield-status" class="powerup-status hidden">
-    🛡 SHIELD
-  </div>
-
-  <div id="magnet-status" class="powerup-status hidden">
-    🧲 MAGNET
-  </div>
-</div>
-
-  <h1>SKY RUN</h1>
-
-  <div class="stat">
-    <span>COINS</span>
-    <strong id="coins">0</strong>
-  </div>
-
-  <div class="stat distance-stat">
-    <span>DISTANCE</span>
-    <strong id="distance">0m</strong>
-  </div>
-  </div>
   <canvas id="gameCanvas"></canvas>
 
   <div id="start-screen" class="screen">
-  <h2>SKY RUN</h2>
+    <h2>SKY RUN</h2>
 
-  <p>Choose your runner</p>
+    <p>Choose your runner</p>
 
-  <div class="character-buttons">
-    <button id="male-button" class="character-button selected">
-      <span class="character-icon male-icon">♂</span>
-      <strong>RUNNER</strong>
-      <small>CYAN SUIT</small>
+    <div class="character-buttons">
+      <button
+        id="male-button"
+        class="character-button selected"
+        type="button"
+      >
+        <span class="character-icon male-icon">♂</span>
+        <strong>RUNNER</strong>
+        <small>CYAN SUIT</small>
+      </button>
+
+      <button
+        id="female-button"
+        class="character-button"
+        type="button"
+      >
+        <span class="character-icon female-icon">♀</span>
+        <strong>RUNNER</strong>
+        <small>PINK SUIT</small>
+      </button>
+    </div>
+
+    <p class="instructions">
+      Swipe left or right to change lanes.<br />
+      Swipe up to jump over barriers.
+    </p>
+
+    <button id="start-button" type="button">
+      TAP TO PLAY
     </button>
-
-    <button id="female-button" class="character-button">
-      <span class="character-icon female-icon">♀</span>
-      <strong>RUNNER</strong>
-      <small>PINK SUIT</small>
-    </button>
-  </div>
-
-  <p class="instructions">
-    Swipe left or right to change lanes.<br />
-    Swipe up to jump over barriers.
-  </p>
-
-  <button id="start-button">TAP TO PLAY</button>
   </div>
 
   <div id="game-over-screen" class="screen hidden">
     <h2>GAME OVER</h2>
-    <p>Final score: <span id="final-score">0</span></p>
-    <button id="restart-button">PLAY AGAIN</button>
+
+    <p>
+      Final score:
+      <span id="final-score">0</span>
+    </p>
+
+    <button id="restart-button" type="button">
+      PLAY AGAIN
+    </button>
   </div>
-<div id="pause-screen" class="screen hidden">
-  <h2>PAUSED</h2>
 
-  <p>Take a break. Your Sky Run is waiting.</p>
+  <div id="pause-screen" class="screen hidden">
+    <h2>PAUSED</h2>
 
-  <button id="resume-button">CONTINUE</button>
-</div>
+    <p>Take a break. Your Sky Run is waiting.</p>
+
+    <button id="resume-button" type="button">
+      CONTINUE
+    </button>
+  </div>
+
   <script src="game.js"></script>
 </body>
 </html>
