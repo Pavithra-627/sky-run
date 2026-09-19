@@ -197,8 +197,7 @@ playerPicture.position.y = 0;
 
 /* Always face the camera from the correct side. */
 playerPicture.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;
-playerPicture.rotation.y = Math.PI;
-
+playerPicture.rotation.y = 0;
   const pictureMaterial = new BABYLON.StandardMaterial(
     "runnerPictureMaterial_" + selectedRunner,
     scene
