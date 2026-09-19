@@ -198,7 +198,7 @@ function createPlayer() {
   /*
     This means the runner image faces correctly.
   */
-  playerPicture.rotation.y = Math.PI;
+  playerPicture.rotation.y = 0;
 
   const pictureMaterial = new BABYLON.StandardMaterial(
     "runnerPictureMaterial_" + selectedRunner,
@@ -473,7 +473,7 @@ function updateRunnerAnimation() {
     1.65 + Math.abs(Math.sin(frames * 0.55)) * 0.08;
 
   playerPicture.rotation.z =
-  Math.sin(frames * 0.28) * 0.035;
+  Math.PI + Math.sin(frames * 0.28) * 0.035;
   playerPicture.position.y =
     Math.sin(frames * 0.55) * 0.04;
 }
