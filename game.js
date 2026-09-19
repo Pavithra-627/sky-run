@@ -1,4 +1,5 @@
-const canvas = document.getElementById("gameCanvas");
+const pictureTexture = ...
+  const canvas = document.getElementById("gameCanvas");
 
 const scoreText = document.getElementById("score");
 const coinsText = document.getElementById("coins");
@@ -633,3 +634,4 @@ engine.runRenderLoop(function () {
 window.addEventListener("resize", function () {
   engine.resize();
 });
+playerPicture.rotation.y = ...;
