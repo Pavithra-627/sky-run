@@ -218,6 +218,8 @@ function createPlayer() {
   );
 
   pictureTexture.hasAlpha = true;
+  pictureTexture.uScale = -1;
+pictureTexture.uOffset = 1;
 
   pictureMaterial.diffuseTexture = pictureTexture;
   pictureMaterial.opacityTexture = pictureTexture;
