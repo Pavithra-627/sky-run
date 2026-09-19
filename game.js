@@ -82,6 +82,10 @@ const createScene = function () {
     let score = 0;
     const scoreDiv = document.getElementById("score");
 
+    // Movement
+    let isMoving = false;
+    const moveSpeed = 0.3;
+
     // Keyboard controls
     scene.actionManager = new BABYLON.ActionManager(scene);
 
@@ -125,7 +129,7 @@ const createScene = function () {
         }
     });
 
-    // HTML Button controls - FIX FOR BUTTONS NOT WORKING
+    // HTML Button controls
     const leftBtn = document.getElementById("leftBtn");
     const rightBtn = document.getElementById("rightBtn");
 
