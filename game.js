@@ -217,6 +217,8 @@ playerPicture.rotation.y = Math.PI;
   );
 
   pictureTexture.hasAlpha = true;
+  pictureTexture.vScale = -1;
+pictureTexture.vOffset = 1;
   
   pictureMaterial.diffuseTexture = pictureTexture;
   pictureMaterial.opacityTexture = pictureTexture;
