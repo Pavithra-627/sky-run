@@ -193,12 +193,11 @@ function createPlayer() {
   );
 
   playerPicture.parent = playerRoot;
-  playerPicture.position.y = 0;
+playerPicture.position.y = 0;
 
-  /*
-    This means the runner image faces correctly.
-  */
-  playerPicture.rotation.y = 0;
+/* Always face the camera from the correct side. */
+playerPicture.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;
+playerPicture.rotation.y = Math.PI;
 
   const pictureMaterial = new BABYLON.StandardMaterial(
     "runnerPictureMaterial_" + selectedRunner,
@@ -218,9 +217,7 @@ function createPlayer() {
   );
 
   pictureTexture.hasAlpha = true;
-  pictureTexture.uScale = -1;
-pictureTexture.uOffset = 1;
-
+  
   pictureMaterial.diffuseTexture = pictureTexture;
   pictureMaterial.opacityTexture = pictureTexture;
   pictureMaterial.useAlphaFromDiffuseTexture = true;
