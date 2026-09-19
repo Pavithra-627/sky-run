@@ -235,10 +235,13 @@ function createPlayer() {
 
   pictureTexture.hasAlpha = true;
 
-  pictureMaterial.diffuseTexture = pictureTexture;
-  pictureMaterial.opacityTexture = pictureTexture;
-  pictureMaterial.useAlphaFromDiffuseTexture = true;
+pictureMaterial.diffuseTexture = pictureTexture;
+pictureMaterial.opacityTexture = pictureTexture;
 
+pictureMaterial.useAlphaFromDiffuseTexture = true;
+pictureMaterial.alphaCutOff = 0.05;
+
+pictureMaterial.backFaceCulling = false;
   pictureMaterial.emissiveColor =
     selectedRunner === "male"
       ? new BABYLON.Color3(0, 0.35, 0.55)
