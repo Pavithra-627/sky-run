@@ -1,72 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sky Run</title>
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        
-        #renderCanvas {
-            width: 100%;
-            height: 100%;
-            touch-action: pan-y;
-        }
-        
-        .game-button {
-            position: absolute;
-            z-index: 100;
-            pointer-events: auto;
-            background: rgba(255, 255, 255, 0.8);
-            border: 2px solid #333;
-            border-radius: 10px;
-            padding: 15px 30px;
-            font-size: 20px;
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .game-button:active {
-            background: rgba(255, 255, 255, 1);
-        }
-        
-        #leftBtn {
-            bottom: 50px;
-            left: 50px;
-        }
-        
-        #rightBtn {
-            bottom: 50px;
-            right: 50px;
-        }
-        
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 24px;
-            color: white;
-            font-family: Arial;
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-    </style>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+
+  <title>Run-Ride</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
 </head>
+
 <body>
-    <div id="score">Score: 0</div>
-    
-    <button id="leftBtn" class="game-button">◀ Left</button>
-    <button id="rightBtn" class="game-button">Right ▶</button>
-    
-    <canvas id="renderCanvas"></canvas>
-    
-    <script src="game.js"></script>
+  <div id="hud">
+    <div class="stat">
+      <span>SCORE</span>
+      <strong id="score">0</strong>
+    </div>
+
+    <h1>RUN-RIDE</h1>
+
+    <div class="stat">
+      <span>COINS</span>
+      <strong id="coins">0</strong>
+    </div>
+
+    <div class="stat distance-stat">
+      <span>DISTANCE</span>
+      <strong id="distance">0m</strong>
+    </div>
+
+    <div class="stat best-stat">
+      <span>BEST</span>
+      <strong id="best-score">0</strong>
+    </div>
+  </div>
+
+  <button
+    id="pause-button"
+    class="pause-button"
+    type="button"
+    aria-label="Pause game"
+  >
+    Ⅱ
+  </button>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="start-screen" class="screen">
+    <h2>RUN-RIDE</h2>
+
+    <img
+      src="image.jpg (2).png"
+      alt="Run-Ride male and female runners"
+      class="runner-picture"
+    />
+
+    <p>Choose your runner</p>
+
+    <div class="character-buttons">
+      <button
+        id="male-button"
+        class="character-button selected"
+        type="button"
+      >
+        MALE RUNNER
+      </button>
+
+      <button
+        id="female-button"
+        class="character-button"
+        type="button"
+      >
+        FEMALE RUNNER
+      </button>
+    </div>
+
+    <p class="instructions">
+      Swipe left or right to change lanes.<br />
+      Swipe up to jump over barriers.
+    </p>
+
+    <button id="start-button" type="button">
+      TAP TO PLAY
+    </button>
+  </div>
+
+  <div id="game-over-screen" class="screen hidden">
+    <h2>GAME OVER</h2>
+
+    <p>
+      Final score:
+      <span id="final-score">0</span>
+    </p>
+
+    <button id="restart-button" type="button">
+      PLAY AGAIN
+    </button>
+  </div>
+
+  <div id="pause-screen" class="screen hidden">
+    <h2>PAUSED</h2>
+
+    <p>Your Run-Ride game is waiting.</p>
+
+    <button id="resume-button" type="button">
+      CONTINUE
+    </button>
+  </div>
+
+  <script src="game.js"></script>
 </body>
 </html>
