@@ -53,11 +53,6 @@ let bestScore =
 
 const lanePositions = [-3, 0, 3];
 
-/*
-  This must match the filename shown in your GitHub repository.
-*/
-const runnerImage = "image.jpg (2).png";
-
 bestScoreText.textContent = bestScore;
 
 function createMaterial(name, color) {
@@ -211,43 +206,34 @@ function createPlayer() {
   playerPicture.position.y = 0;
 
   /*
-    Billboard keeps image facing the camera.
-    Do NOT rotate it by Math.PI.
+    The plane must rotate 180 degrees so it faces
+    correctly toward the follow camera.
   */
-  playerPicture.parent = playerRoot;
-playerPicture.position.y = 0;
   playerPicture.rotation.y = Math.PI;
+
   const pictureMaterial = new BABYLON.StandardMaterial(
     "runnerPictureMaterial_" + selectedRunner,
     scene
   );
 
+  /*
+    Separate image files:
+    Male Runner = male.png
+    Female Runner = female.png
+  */
+  const selectedImage =
+    selectedRunner === "male"
+      ? "male.png"
+      : "female.png";
+
   const pictureTexture = new BABYLON.Texture(
-    runnerImage,
+    selectedImage,
     scene,
     true,
     false
   );
 
   pictureTexture.hasAlpha = true;
-
-  /*
-    Combined uploaded image:
-    Left side is the male runner.
-    Right side is the female runner.
-
-    uScale = 0.5 displays half of the image.
-    No negative uScale means image is not reversed.
-  */
-  pictureTexture.uScale = 0.5;
-
-  pictureTexture.uScale = -0.5;
-
-if (selectedRunner === "male") {
-  pictureTexture.uOffset = 0.5;
-} else {
-  pictureTexture.uOffset = 1;
-}
 
   pictureMaterial.diffuseTexture = pictureTexture;
   pictureMaterial.opacityTexture = pictureTexture;
@@ -350,6 +336,7 @@ function chooseMale() {
   if (playing) return;
 
   selectedRunner = "male";
+
   maleButton.classList.add("selected");
   femaleButton.classList.remove("selected");
 
@@ -360,6 +347,7 @@ function chooseFemale() {
   if (playing) return;
 
   selectedRunner = "female";
+
   femaleButton.classList.add("selected");
   maleButton.classList.remove("selected");
 
