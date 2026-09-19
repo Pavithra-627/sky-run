@@ -207,8 +207,8 @@ function createPlayer() {
 
   const selectedImage =
   selectedRunner === "male"
-    ? "male-back.png"
-    : "female-back.png";
+    ? "male.png"
+    : "female.png";
   const pictureTexture = new BABYLON.Texture(
     selectedImage,
     scene,
