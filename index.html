@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sky Run</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <style>
@@ -12,14 +12,12 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #000;
         }
         
         #renderCanvas {
             width: 100%;
             height: 100%;
             touch-action: pan-y;
-            display: block;
         }
         
         .game-button {
@@ -33,8 +31,6 @@
             font-size: 20px;
             cursor: pointer;
             user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
         }
         
         .game-button:active {
@@ -57,10 +53,9 @@
             left: 10px;
             font-size: 24px;
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            pointer-events: none;
         }
     </style>
 </head>
