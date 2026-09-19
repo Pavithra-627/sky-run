@@ -198,7 +198,7 @@ function createPlayer() {
   /*
     This means the runner image faces correctly.
   */
-  playerPicture.rotation.y = 0;
+  playerPicture.rotation.y = Math.PI;
 
   const pictureMaterial = new BABYLON.StandardMaterial(
     "runnerPictureMaterial_" + selectedRunner,
