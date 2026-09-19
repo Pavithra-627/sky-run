@@ -205,10 +205,7 @@ function createPlayer() {
     scene
   );
 
-  const selectedImage =
-  selectedRunner === "male"
-    ? "male.png"
-    : "female.png";
+  const selectedImage = "runner-back.png";
   const pictureTexture = new BABYLON.Texture(
     selectedImage,
     scene,
@@ -473,7 +470,7 @@ function updateRunnerAnimation() {
     1.65 + Math.abs(Math.sin(frames * 0.55)) * 0.08;
 
   playerPicture.rotation.z =
-  Math.PI + Math.sin(frames * 0.28) * 0.035;
+  Math.sin(frames * 0.28) * 0.035;
   playerPicture.position.y =
     Math.sin(frames * 0.55) * 0.04;
 }
