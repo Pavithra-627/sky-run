@@ -95,16 +95,6 @@ function createScene() {
 
   light.intensity = 1;
 
-  const pinkLight = new BABYLON.PointLight(
-    "pinkLight",
-    new BABYLON.Vector3(0, 7, 15),
-    scene
-  );
-
-  pinkLight.diffuse = new BABYLON.Color3(1, 0.05, 0.65);
-  pinkLight.intensity = 1.3;
-  pinkLight.range = 32;
-
   createRoad();
   createPlayer();
 
@@ -206,21 +196,15 @@ function createPlayer() {
   playerPicture.position.y = 0;
 
   /*
-    The plane must rotate 180 degrees so it faces
-    correctly toward the follow camera.
+    This means the runner image faces correctly.
   */
-  playerPicture.rotation.y = Math.PI;
+  playerPicture.rotation.y = 0;
 
   const pictureMaterial = new BABYLON.StandardMaterial(
     "runnerPictureMaterial_" + selectedRunner,
     scene
   );
 
-  /*
-    Separate image files:
-    Male Runner = male.png
-    Female Runner = female.png
-  */
   const selectedImage =
     selectedRunner === "male"
       ? "male.png"
@@ -235,19 +219,17 @@ function createPlayer() {
 
   pictureTexture.hasAlpha = true;
 
-pictureMaterial.diffuseTexture = pictureTexture;
-pictureMaterial.opacityTexture = pictureTexture;
+  pictureMaterial.diffuseTexture = pictureTexture;
+  pictureMaterial.opacityTexture = pictureTexture;
+  pictureMaterial.useAlphaFromDiffuseTexture = true;
+  pictureMaterial.alphaCutOff = 0.05;
+  pictureMaterial.backFaceCulling = false;
 
-pictureMaterial.useAlphaFromDiffuseTexture = true;
-pictureMaterial.alphaCutOff = 0.05;
-
-pictureMaterial.backFaceCulling = false;
   pictureMaterial.emissiveColor =
     selectedRunner === "male"
       ? new BABYLON.Color3(0, 0.35, 0.55)
       : new BABYLON.Color3(0.45, 0.02, 0.28);
 
-  pictureMaterial.backFaceCulling = false;
   playerPicture.material = pictureMaterial;
 
   playerShadow = BABYLON.MeshBuilder.CreateDisc(
@@ -273,6 +255,7 @@ pictureMaterial.backFaceCulling = false;
       : new BABYLON.Color3(0.55, 0.02, 0.40);
 
   shadowMaterial.alpha = 0.55;
+
   playerShadow.material = shadowMaterial;
 }
 
